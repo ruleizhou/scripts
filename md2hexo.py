@@ -114,7 +114,7 @@ class MdArticle(object):
         filePrefixLines.append('tags: %s  \n' % str(self.tags))
         # 收尾
         filePrefixLines.append('toc: true  \n')
-        if self.title.find('密') > -1:
+        if self.title.find('[密]') > -1:
             filePrefixLines.append('password: xxxxyyyy  \n')
         filePrefixLines.append('\n---\n')
         # 标题也重新生成,标题不重新生成
