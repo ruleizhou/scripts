@@ -20,16 +20,8 @@ import sys
 import os
 import time
 import io
-from aip import AipNlp
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf8')
 
-
-""" 你的 APPID AK SK """
-APP_ID = '18685503'
-API_KEY = '4GrRGHgohbxaoPY8xG1WKQGa'
-SECRET_KEY = 'goGoz3Y71gLgv4ZOAmNGWEnwZZqpjVce'
-
-client = AipNlp(APP_ID, API_KEY, SECRET_KEY)
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf8')
 
 
 # 时间戳转换
@@ -44,11 +36,6 @@ def getFileDatetime(fullFilePath):
 
 def getFileCategories(fullFilePath):
     return filter(lambda x: x != '.' and x != '/' and x != '', fullFilePath.split('/')[:-1])
-
-
-def getFileTags(title, content):
-    retJson=client.keyword(str(title.encode("GBK",'ignore')), str(content.encode("GBK",'ignore')))
-    return [item.get('tag') for item in retJson.get('items',[])][:5]
 
 
 class MdArticle(object):
@@ -83,7 +70,7 @@ class MdArticle(object):
                 if endLineNum == 0:
                     self.data.extend(lines[0:])
                 else:
-                    self.data.extend(lines[endLineNum +  1:])
+                    self.data.extend(lines[endLineNum + 1:])
                 f.close()
         return
 
@@ -96,9 +83,6 @@ class MdArticle(object):
         if not self.date:
             self.date = getFileDatetime(self.fullFilePath)
         self.categories = str(list(getFileCategories(self.fullFilePath)))
-        if len(self.tags) <= 2:  # str形式list,至少含有[]2个字符
-            self.tags = str(getFileTags(title=self.title, content=','.join(self.data)))
-
         return
 
     # 保存到文件中
@@ -118,7 +102,7 @@ class MdArticle(object):
             filePrefixLines.append('password: xxxxyyyy  \n')
         filePrefixLines.append('\n---\n')
         # 标题也重新生成,标题不重新生成
-        #filePrefixLines.append('# %s\n' % self.title)
+        # filePrefixLines.append('# %s\n' % self.title)
         filePrefixLines.extend(self.data)
 
         # 操作文件
@@ -128,6 +112,7 @@ class MdArticle(object):
             f.flush()
             f.close()
         return
+
 
 # 处理单文件
 def handleFile(fullFilePath):
@@ -156,10 +141,10 @@ def handleDir(fileDir):
 # fullFilePath = 'abc.md'
 # handleFile(fullFilePath)
 
-param = sys.argv[1]
-if os.path.isdir(param):
-    handleDir(param)
-elif os.path.isfile(param):
-    handleFile(param)
 
-
+print('params:'+str(sys.argv[1:]))
+for param in sys.argv[1:]:
+    if os.path.isdir(param):
+        handleDir(param)
+    elif os.path.isfile(param):
+        handleFile(param)
