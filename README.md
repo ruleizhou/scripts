@@ -53,7 +53,8 @@ fffzzkkk
 使用方法2,用于目录:python md2hexo.py xxxx/yyyy/zzz/  
 使用方法3,用于文件和目录且多个:python md2hexo.py xxxx/yyy.md  xxxx/yyyy/zzz/  xxxx/yyyy/fff/  
 
-特殊说明：文章的categories其实是文件路径切分，所以执行脚本前,md2hexo.py文件位置最好和md文件或者文件夹同级位置  
+特殊说明：
+01,文章的categories其实是文件路径切分，所以执行脚本前,md2hexo.py文件位置最好和md文件或者文件夹同级位置  
 比如：脚本位置:/xxx/yyy/zzz/md2hexo.py  
 你的md文件位置:/fff/mmm/kkk/vnote/生活/日记20200328.md  
 此时如果你在路径:/xxx/yyy/zzz/下执行脚本,python md2hexo.py /fff/mmm/kkk/vnote/生活/日记20200328.md  
@@ -68,4 +69,7 @@ fffzzkkk
 ```
 cp md2hexo.py /home/john/文档/vnote_notebooks/vnote/ && cd /home/john/文档/vnote_notebooks/vnote/ && python md2hexo.py $(ls -I _v_recycle_bin) && rm md2hexo.py 
 ```
+
+02,阅读代码可以发现，对于文章标题(也即是文件名)如果含有[密]，则自动增加字段password: xxxxyyyy ,为了实现对文章添加密码，没有密码无法访问（需要hexo插件配合)  
+
 
