@@ -18,3 +18,54 @@ hexo的source文件夹(路径):\~/my_hexo/source/images/(后面的images脚本�
 代码行数不多，但是较难看懂，主要是awk语法使用较多，其中很多涉及多次转义的字符  
 参考本博客博文：脚本_vnote同步到hexo步骤[博]（自行搜索）  
 
+## md2hexo.py
+将vnote的md格式转为hexo的md格式  
+vnote原始文件：  
+路径：xxx/vnote/生活/日记20200328.md  
+内容:  
+
+```
+# 天气晴，32度，心情好
+## 张三给我拳头
+xxxxyyyyzzz
+## 我打李四一巴掌
+fffzzkkk
+```
+执行：python md2hexo.py xxx/vnote/生活/日记20200328.md  
+这里转换后会在新md添加title信息  
+```
+title:日记20200328(注意:title其实是文件名)
+date: 2020-03-01 16:18:26
+categories: ['xxx','vnote','生活'](注意:这里即使就是文件的路径，切分)
+tags: ['']
+toc: true
+```
+正文部分:
+```
+## 张三给我拳头  
+xxxxyyyyzzz  
+## 我打李四一巴掌  
+fffzzkkk  
+```
+主意正文部分的title没了，原因是本人采用icarus模板，此模板也认可头部的title:xxxx这里作为标题，如果下面还有标题，显示时就是双标题，导致格式错乱  
+如果你采用Next模板，则不同，需稍微改下代码，保持正文首行的标题  
+使用方法1,用于文件:python md2hexo.py xxxx/yyy.md  
+使用方法2,用于目录:python md2hexo.py xxxx/yyyy/zzz/  
+使用方法3,用于文件和目录且多个:python md2hexo.py xxxx/yyy.md  xxxx/yyyy/zzz/  xxxx/yyyy/fff/  
+
+特殊说明：文章的categories其实是文件路径切分，所以执行脚本前,md2hexo.py文件位置最好和md文件或者文件夹同级位置  
+比如：脚本位置:/xxx/yyy/zzz/md2hexo.py  
+你的md文件位置:/fff/mmm/kkk/vnote/生活/日记20200328.md  
+此时如果你在路径:/xxx/yyy/zzz/下执行脚本,python md2hexo.py /fff/mmm/kkk/vnote/生活/日记20200328.md  
+这样的话md文件的categories,是，fff,mmm,kkk,vnote,生活,但大多数情况，fff,mmm,可能是没用的，比如home/username/等无意义的  
+所以建议，将md2hexo.py放到/fff/mmm/kkk/vnote/下面，在/fff/mmm/kkk/vnote/下执行:python md2hexo.py 生活/日记20200328.md  
+如此的化，生成的文章的categories则为['生活'],基本符合本意  
+如下命令是：  
+1,md2hexo.py复制到md所在文件夹　/home/john/文档/vnote_notebooks/vnote/  
+2,在md所在文件夹外执行python md2hexo.py $(ls -I _v_recycle_bin)  
+3,删除第１步复制过来的md2hexo.py脚本文件  
+建议使用前，单个步骤执行下，看下各个命令都什么效果，避免错了，还要在修改.md文件  
+```
+cp md2hexo.py /home/john/文档/vnote_notebooks/vnote/ && cd /home/john/文档/vnote_notebooks/vnote/ && python md2hexo.py $(ls -I _v_recycle_bin) && rm md2hexo.py 
+```
+
