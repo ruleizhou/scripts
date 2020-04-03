@@ -4,12 +4,11 @@
 功能说明  
 将vnote的md格式转为hexo的md格式，生成类似下面的文件前缀(同时，删除文件正文首行的title)  
 ```
-title: 01_原因
-date: 2019-11-30 00:00:01
-categories:['xx','yy']
-tags:['ff','zz']
-comments: true
-toc: true
+title: 理财_保险[博]  
+date: 2019-12-02 15:24:52  
+categories: ['生活', '其他']  
+tags: []  
+toc: true  
  
 ```
 
