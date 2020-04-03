@@ -1,21 +1,26 @@
 # coding=utf-8
 # 基于conda env:py35
 
-# 类似下面的文件前缀
+# 功能说明
+# 将vnote的md格式转为hexo的md格式，生成类似下面的文件前缀(同时，删除文件正文首行的title)  
 # ---
 # title: 01_原因
 # date: 2019-11-30 00:00:01
-# categories:
-#  - 技术
-#  - java
+# categories:['xx','yy']
+# tags:['ff','zz']
+# comments: true
+# toc: true
+# 
 # ---
 
+# 用法说明和举例
 # 用法 python md2hexo 目录
 #   递归查询目录下所有md文件，生成md文件的前缀信息
 # 用法 python md2hexo ./目录1/目录2/文件.md(x)
 #   生成文件的前缀，此时文件的cate=目录1,目录2
 # 用法 python md2hexo 文件.md
-#   生成文件的前缀，此时文件的cate=空
+
+# 生成文件的前缀，此时文件的cate=空
 import sys
 import os
 import time

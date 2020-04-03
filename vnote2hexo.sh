@@ -1,4 +1,12 @@
 #!/bin/bash
+# 功能说明
+# 基于vnote的自动发布  
+# 将vnote中的符合条件的文章（.md文件）,复制到hexo/source/_posts/,  
+# 符合条件的md文章里面涉及的图片，复制到hexo/source/images/(并修改其内部引用路径格式)  
+
+# 用法说明和举例
+# 使用方法:./vnote2hexo.sh ~/文档/vnote_notebooks/vnote ~/my_hexo/source "*发布*.md"
+
 # 删除hexo已有的文章和附件
 echo "删除hexo博客下的文件夹_posts,images"
 rm $2/_posts/* 

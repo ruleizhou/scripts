@@ -1,8 +1,26 @@
 # scripts
 
 ## 01,md2hexo.py
-将vnote的md格式转为hexo的md格式  
-vnote原始文件：  
+功能说明  
+将vnote的md格式转为hexo的md格式，生成类似下面的文件前缀(同时，删除文件正文首行的title)  
+---
+title: 01_原因
+date: 2019-11-30 00:00:01
+categories:['xx','yy']
+tags:['ff','zz']
+comments: true
+toc: true
+ 
+---
+
+用法说明和举例  
+用法 python md2hexo 目录  
+&emsp;递归查询目录下所有md文件，生成md文件的前缀信息  
+用法 python md2hexo ./目录1/目录2/文件.md(x)  
+&emsp;生成文件的前缀，此时文件的cate=目录1,目录2  
+用法 python md2hexo 文件.md  
+
+举例：vnote原始文件：  
 路径：xxx/vnote/生活/日记20200328.md  
 内容:  
 
@@ -22,7 +40,7 @@ categories: ['xxx','vnote','生活'](注意:这里即使就是文件的路径，
 tags: ['']
 toc: true
 ```
-正文部分:
+正文部分:  
 ```
 ## 张三给我拳头  
 xxxxyyyyzzz  
@@ -58,7 +76,7 @@ cp md2hexo.py /home/john/文档/vnote_notebooks/vnote/ && cd /home/john/文档/v
 ## 02,vnote2hexo.sh
 基于vnote的自动发布  
 将vnote中的符合条件的文章（.md文件）,复制到hexo/source/_posts/,  
-符合条件的md文章里面涉及的图片，复制到hexo/source/images/  
+符合条件的md文章里面涉及的图片，复制到hexo/source/images/(并修改其内部引用路径格式)  
 使用方法：  
 ```
 ./vnote2hexo.sh ~/文档/vnote_notebooks/vnote ~/my_hexo/source "*发布*.md"
