@@ -59,8 +59,8 @@ def getFileCategories(fullFilePath):
 
 
 def getFileTags(title):
-    title = re.sub(r'\[.*?\]', r'', title)  # 去除[]中的东西
-    params = '{"Num":5,"Text":"%s"}' % title
+    title = re.sub(r'\[.*?\]', r'', title).replace('_',',')  # 去除[]中的东西
+    params = '{"Num":10,"Text":"%s"}' % title
     req.from_json_string(params)
     resp = client.KeywordsExtraction(req)
     return [item.Word for item in resp.Keywords]
@@ -112,7 +112,7 @@ class MdArticle(object):
             self.date = getFileDatetime(self.fullFilePath)
         self.categories = str(list(getFileCategories(self.fullFilePath)))
         if len(self.tags) <= 2:  # str形式list,至少含有[]2个字符
-            self.tags = str(getFileTags(title=self.title))
+            self.tags = str(getFileTags(title=filePath.replace('/',',')+','+self.title))
         return
 
     # 保存到文件中
@@ -126,7 +126,7 @@ class MdArticle(object):
         # 文件相对路径，填充categories
         filePrefixLines.append('categories: %s  \n' % str(self.categories))
         filePrefixLines.append('tags: %s  \n' % str(self.tags))
-        filePrefixLines.append('keywords: %s  \n' % str(self.tags).replace('[', '').replace(']', ''))
+        filePrefixLines.append('keywords: %s  \n' % str(self.tags).replace('[', '').replace(']', '').replace("'", ''))
         # 收尾
         filePrefixLines.append('toc: true  \n')
         if self.title.find('[密]') > -1:
