@@ -60,6 +60,7 @@ def getFileCategories(fullFilePath):
 
 def getFileTags(title):
     title = re.sub(r'\[.*?\]', r'', title).replace('_',',')  # 去除[]中的东西
+    title = re.sub(r'\d+', r'', title)
     params = '{"Num":10,"Text":"%s"}' % title
     req.from_json_string(params)
     resp = client.KeywordsExtraction(req)
