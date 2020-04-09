@@ -19,13 +19,29 @@
 #   生成文件的前缀，此时文件的cate=目录1,目录2
 # 用法 python md2hexo 文件.md
 
+import io
+import os
+import re
 # 生成文件的前缀，此时文件的cate=空
 import sys
-import os
 import time
-import io
+
+from tencentcloud.common import credential
+from tencentcloud.common.profile.client_profile import ClientProfile
+from tencentcloud.common.profile.http_profile import HttpProfile
+from tencentcloud.nlp.v20190408 import nlp_client, models
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf8')
+
+# 访问凭证去腾讯找，参考：https://console.cloud.tencent.com/nlp/basicguide
+cred = credential.Credential("xxx", "yyy")
+httpProfile = HttpProfile()
+httpProfile.endpoint = "nlp.tencentcloudapi.com"
+
+clientProfile = ClientProfile()
+clientProfile.httpProfile = httpProfile
+client = nlp_client.NlpClient(cred, "ap-guangzhou", clientProfile)
+req = models.KeywordsExtractionRequest()
 
 
 # 时间戳转换
@@ -40,6 +56,14 @@ def getFileDatetime(fullFilePath):
 
 def getFileCategories(fullFilePath):
     return filter(lambda x: x != '.' and x != '/' and x != '', fullFilePath.split('/')[:-1])
+
+
+def getFileTags(title):
+    title = re.sub(r'\[.*?\]', r'', title)  # 去除[]中的东西
+    params = '{"Num":5,"Text":"%s"}' % title
+    req.from_json_string(params)
+    resp = client.KeywordsExtraction(req)
+    return [item.Word for item in resp.Keywords]
 
 
 class MdArticle(object):
@@ -87,6 +111,8 @@ class MdArticle(object):
         if not self.date:
             self.date = getFileDatetime(self.fullFilePath)
         self.categories = str(list(getFileCategories(self.fullFilePath)))
+        if len(self.tags) <= 2:  # str形式list,至少含有[]2个字符
+            self.tags = str(getFileTags(title=self.title))
         return
 
     # 保存到文件中
@@ -100,6 +126,7 @@ class MdArticle(object):
         # 文件相对路径，填充categories
         filePrefixLines.append('categories: %s  \n' % str(self.categories))
         filePrefixLines.append('tags: %s  \n' % str(self.tags))
+        filePrefixLines.append('keywords: %s  \n' % str(self.tags).replace('[', '').replace(']', ''))
         # 收尾
         filePrefixLines.append('toc: true  \n')
         if self.title.find('[密]') > -1:
@@ -138,7 +165,7 @@ def handleDir(fileDir):
     [handleFile(fullFilePath) for fullFilePath in allFullFilePath]
 
 
-# fullFilePath = '/home/john/abc.md'
+# fullFilePath = '/home/john/文档/vnote_notebooks/vnote/生活/读书笔记/读书笔记_魔鬼搭讪学[整].md'
 # handleFile(fullFilePath)
 # fileDir = './test1/test2/'
 # handleDir(fileDir)
@@ -146,7 +173,7 @@ def handleDir(fileDir):
 # handleFile(fullFilePath)
 
 
-print('params:'+str(sys.argv[1:]))
+print('params:' + str(sys.argv[1:]))
 for param in sys.argv[1:]:
     if os.path.isdir(param):
         handleDir(param)
