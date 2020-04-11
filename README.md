@@ -91,4 +91,10 @@ hexo的source文件夹(路径):\~/my_hexo/source/images/(后面的images脚本�
 代码行数不多，但是较难看懂，主要是awk语法使用较多，其中很多涉及多次转义的字符  
 参考本博客博文：脚本_vnote同步到hexo步骤[博]（自行搜索）  
 
-
+## 03,cta_machineInfo.py  
+功能：显示ubuntu下cta软件获取到的机器信息（无法通过验证时，自查问题使用）  
+python cta_machineInfo/cta_machineInfo.py   
+```
+b'2@2020-04-11 18:04:54@172.17.0.1@172.16.0.239@0242b4365d41@aced5cf6d10a@john-P95-@4.15.@@@'
+c_int(90)
+```
