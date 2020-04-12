@@ -24,9 +24,11 @@ awk  -v  to="$2/_posts/" '{cmd="cp  "$0" "to ; system(cmd)}'  md_file_loc.txt
 
 # 将hexo文件中的图片地址,提取到md_file_loc.txt中
 echo "hexo文件中的图片地址,提取到md_file_loc.txt中"
-find $1/ -path $1/_v_recycle_bin -prune -o  -regex ".*\.jpg\|.*\.png" -print | grep -v total > tmp_png.txt
+find $1/ -path $1/_v_recycle_bin -prune -o  -regex ".*\.jpg\|.*\.png\|.*\.gif" -print | grep -v total > tmp_png.txt
 awk  -v  to="~/tmp_hexo/tmp_png/" '{cmd="cp  "$0" "to ; system(cmd)}'  tmp_png.txt
 awk -F / -v patten="'[0-9_]+\.png'"  -v mdPath="$2/_posts/" '{cmd= "grep -o -E " patten " " mdPath $NF;system(cmd)}' md_file_loc.txt | grep -v total > tmp_png_choose.txt
+awk -F / -v patten="'[0-9_]+\.gif'"  -v mdPath="$2/_posts/" '{cmd= "grep -o -E " patten " " mdPath $NF;system(cmd)}' md_file_loc.txt | grep -v total >> tmp_png_choose.txt
+awk -F / -v patten="'[0-9_]+\.jpg'"  -v mdPath="$2/_posts/" '{cmd= "grep -o -E " patten " " mdPath $NF;system(cmd)}' md_file_loc.txt | grep -v total >> tmp_png_choose.txt
 awk -v from="./tmp_png/" -v to="$2/images/" '{cmd="mv "from $1 " " to ;system(cmd)}' tmp_png_choose.txt
 
 # 替换文件路径(vnote图片位于_v_images下，而hexo图片位置为images)
