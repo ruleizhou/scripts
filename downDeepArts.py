@@ -41,8 +41,8 @@ headers = {
 
 rootUrl = sys.argv[1]
 suffix = sys.argv[2]
-maxCount = sys.argv[3]
-maxDepth = sys.argv[4]
+maxCount = int(sys.argv[3])
+maxDepth = int(sys.argv[4])
 
 print('params:' + str(sys.argv[1:]))
 
