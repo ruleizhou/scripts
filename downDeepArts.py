@@ -8,14 +8,10 @@ from multiprocessing.dummy import Pool
 
 import requests
 
-rootUrl = sys.argv[1]
-suffix = sys.argv[2]
-maxCount = sys.argv[3]
-maxDepth = sys.argv[4]
 
 # 递归采集友情链接
 # python xx.py rootUrl suffix maxCount maxDepth
-# python xx.py 'https://hexo.yuanjh.cn' '/links' 50 8
+# python xx.py 'https://hexo.yuanjh.cn' '/links' 100 10
 # 步骤
 # 1,https://hexo.yuanjh.cn => https://hexo.yuanjh.cn/links
 # 2,https://hexo.yuanjh.cn/links => [http://xxx.yy.com,https://zz.ff.cn]
