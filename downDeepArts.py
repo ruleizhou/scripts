@@ -1,13 +1,10 @@
 # encoding: UTF-8
+import datetime
 import re
 import sys
-import random
-import datetime
-from multiprocessing import cpu_count
-from multiprocessing.dummy import Pool
+from multiprocessing import cpu_count, Pool
 
 import requests
-
 
 # 递归采集友情链接
 # python xx.py rootUrl suffix maxCount maxDepth
