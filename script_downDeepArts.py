@@ -8,9 +8,22 @@ from multiprocessing.dummy import Pool
 
 import requests
 
-# 功能，下载，访问特定网页
-# python xx.py pagePattern start_page end_page
-# python xx.py 'https://blog.csdn.net/u011331731/article/list/%s' 0 19
+rootUrl = sys.argv[1]
+suffix = sys.argv[2]
+maxCount = sys.argv[3]
+maxDepth = sys.argv[4]
+
+# 递归采集友情链接
+# python xx.py rootUrl suffix maxCount maxDepth
+# python xx.py 'https://hexo.yuanjh.cn' '/links' 50 8
+# 步骤
+# 1,https://hexo.yuanjh.cn => https://hexo.yuanjh.cn/links
+# 2,https://hexo.yuanjh.cn/links => [http://xxx.yy.com,https://zz.ff.cn]
+# 3,[http://xxx.yy.com,https://zz.ff.cn] => [http://xxx.yy.com/links,https://zz.ff.cn/links]
+# => [(http://xxx.yy.com/links,[页面拥有子链接（根域名形式）]),(https://zz.ff.cn/links,[页面拥有子链接（根域名形式）])]
+# => handleSet=[http://xxx.yy.com/links,https://zz.ff.cn/links]
+#    waitSet=[页面拥有子链接（根域名形式）,页面拥有子链接（根域名形式）,,,]
+# => 循环此步骤
 
 headers = {
     'Connection': 'keep-alive',
