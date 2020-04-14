@@ -98,3 +98,6 @@ python cta_machineInfo/cta_machineInfo.py
 b'2@2020-04-11 18:04:54@172.17.0.1@172.16.0.239@0242b4365d41@aced5cf6d10a@john-P95-@4.15.@@@'
 c_int(90)
 ```
+
+## 04,downDeepArts.py
+递归采集友情链接  
