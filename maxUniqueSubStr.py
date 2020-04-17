@@ -1,6 +1,12 @@
 # coding=utf-8
 # 基于conda env:py35
 # abcabfdbbad
+# import sys
+#
+# if len(sys.argv) < 1:
+#     print('no param')
+#     exit()
+# print('params:' + str(sys.argv[1:]))
 
 paramStr = 'abcabfdbbad'
 paramStrLen = len(paramStr)
@@ -16,4 +22,4 @@ for i in range(paramStrLen):
 maxNum = max(map(max, df))
 print('max len：', maxNum)
 print('max str:\n' + str(
-    list([paramStr[x:y] for x in range(paramStrLen) for y in range(x + 1, paramStrLen) if df[x][y] == maxNum])))
+    list([paramStr[x:y+1] for x in range(paramStrLen) for y in range(x + 1, paramStrLen) if df[x][y] == maxNum])))
