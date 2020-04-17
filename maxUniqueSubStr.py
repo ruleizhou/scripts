@@ -8,7 +8,7 @@ if len(sys.argv) < 1:
     exit()
 print('params:' + str(sys.argv[1:]))
 
-paramStr = 'abcabfdbbad'
+paramStr = str(sys.argv[1])
 paramStrLen = len(paramStr)
 df = [[0 for y in range(paramStrLen)] for x in range(paramStrLen)]
 for x in range(paramStrLen):
@@ -22,4 +22,4 @@ for i in range(paramStrLen):
 maxNum = max(map(max, df))
 print('max len：', maxNum)
 print('max str:\n' + str(
-    list([paramStr[x:y+1] for x in range(paramStrLen) for y in range(x + 1, paramStrLen) if df[x][y] == maxNum])))
+    list([paramStr[x:y + 1] for x in range(paramStrLen) for y in range(x + 1, paramStrLen) if df[x][y] == maxNum])))
