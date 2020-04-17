@@ -1,12 +1,12 @@
 # coding=utf-8
 # 基于conda env:py35
 # abcabfdbbad
-# import sys
-#
-# if len(sys.argv) < 1:
-#     print('no param')
-#     exit()
-# print('params:' + str(sys.argv[1:]))
+import sys
+
+if len(sys.argv) < 1:
+    print('no param')
+    exit()
+print('params:' + str(sys.argv[1:]))
 
 paramStr = 'abcabfdbbad'
 paramStrLen = len(paramStr)
