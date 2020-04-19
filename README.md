@@ -1,4 +1,5 @@
 # scripts
+依赖conda环境（默认）：py35   
 
 ## 01,md2hexo.py  
 功能说明  
