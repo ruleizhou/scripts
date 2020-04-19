@@ -1,10 +1,5 @@
 # encoding: UTF-8
-import datetime
-import re
-import sys
-from multiprocessing import cpu_count, Pool
 
-import requests
 
 # 递归采集友情链接
 # python xx.py rootUrl suffix maxCount maxDepth
@@ -17,6 +12,13 @@ import requests
 # => handleSet=[http://xxx.yy.com/links,https://zz.ff.cn/links]
 #    waitSet=[页面拥有子链接（根域名形式）,页面拥有子链接（根域名形式）,,,]
 # => 循环此步骤
+
+import datetime
+import re
+import sys
+from multiprocessing import cpu_count, Pool
+
+import requests
 
 headers = {
     'Connection': 'keep-alive',
