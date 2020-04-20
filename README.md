@@ -102,3 +102,6 @@ c_int(90)
 
 ## 04,downDeepArts.py
 递归采集友情链接  
+
+## 05,pkl2Csv2Center.py
+将pkl转为csv格式(方便直接导入数据库等）  
