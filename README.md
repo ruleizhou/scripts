@@ -105,3 +105,7 @@ c_int(90)
 
 ## 05,pkl2Csv.py
 将pkl转为csv格式(方便直接导入数据库等）  
+```
+python xx.py pklPath raname_map
+python pkl2Csv.py ~/下载/dd_price_vp_20190601_20200421.pkl '{"index":"datetime","minor_xs":"code","volume":"vol"}'
+```
