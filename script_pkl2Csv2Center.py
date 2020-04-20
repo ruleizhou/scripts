@@ -3,7 +3,7 @@
 
 # 将pkl转为csv格式(方便直接导入数据库等）
 # python xx.py pklPath raname_map
-# python script_pkl2Csv2Center.py ~/下载/dd_price_vp_20190601_20200421.pkl '{"index":"datetime","volume":"vol"}'
+# python script_pkl2Csv2Center.py ~/下载/dd_price_vp_20190601_20200421.pkl '{"index":"datetime","minor_xs":"code","volume":"vol"}'
 # 步骤
 # 1,依次取得pkl文件minor_xs轴维度 as df
 # 2,df.reset_index(),df.dropna(),df拼接为all_df
@@ -29,14 +29,14 @@ def pkl2Csv(file_path_pkl, rename_map=None):
     print('to csv file:%s' % file_path_csv)
     future_data = pd.read_pickle(file_path_pkl)
     all_df = pd.DataFrame()  # columns=['datetime', 'open', 'high', 'low', 'close', 'vol', 'code']
-    for symbol in future_data.minor_axis:
-        print('symbol', symbol)
+    for minor_xs in future_data.minor_axis:
+        print('symbol', minor_xs)
         try:
-            df = future_data.minor_xs(symbol)
+            df = future_data.minor_xs(minor_xs)
             if df is None:
-                print("None %s" % symbol)
+                print("None %s" % minor_xs)
                 continue
-            # df['code'] = symbol
+            df['minor_xs'] = minor_xs
             df = df.reset_index()
             # df.rename(columns={'index': 'datetime', 'volume': 'vol'}, inplace=True)
             df = df.dropna()
