@@ -3,7 +3,11 @@
 #ubuntu查看穿透监管相关信息
 
 from ctypes import *
-libtest = cdll.LoadLibrary('/home/john/PYTHON/scripts/cta_machineInfo/LinuxDataCollect.so')
+import os
+import chardet
+file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'LinuxDataCollect.so')
+
+libtest = cdll.LoadLibrary(file_path)
 
 # testpy = libtest.CTP_GetSystemInfo
 # testpy.argtype = c_char_p
