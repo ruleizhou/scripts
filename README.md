@@ -67,7 +67,7 @@ fffzzkkk
 3,删除第１步复制过来的md2hexo.py脚本文件  
 建议使用前，单个步骤执行下，看下各个命令都什么效果，避免错了，还要在修改.md文件  
 ```
-cp md2hexo.py /home/john/文档/vnote_notebooks/vnote/ && cd /home/john/文档/vnote_notebooks/vnote/ && python md2hexo.py $(ls -I _v_recycle_bin) && rm md2hexo.py 
+cp md2hexo.py /home/john/文档/vnote_notebooks/vnote/ && cd /home/john/文档/vnote_notebooks/vnote/ && conda activate py35 && python md2hexo.py $(ls -I _v_recycle_bin) && rm md2hexo.py 
 ```
 
 02,阅读代码可以发现，对于文章标题(也即是文件名)如果含有[密]，则自动增加字段password: xxxxyyyy ,为了实现对文章添加密码，没有密码无法访问（需要hexo插件配合)  

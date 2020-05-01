@@ -30,6 +30,7 @@ from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
 from tencentcloud.nlp.v20190408 import nlp_client, models
+import hashlib
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf8')
 
@@ -42,6 +43,9 @@ clientProfile = ClientProfile()
 clientProfile.httpProfile = httpProfile
 client = nlp_client.NlpClient(cred, "ap-guangzhou", clientProfile)
 req = models.KeywordsExtractionRequest()
+
+# 记录addr对应文章，用于输出冲突文章，手工处理
+abbrMap = dict()
 
 
 # 时间戳转换
@@ -59,12 +63,16 @@ def getFileCategories(fullFilePath):
 
 
 def getFileTags(title):
-    title = re.sub(r'\[.*?\]', r'', title).replace('_',',')  # 去除[]中的东西
+    title = re.sub(r'\[.*?\]', r'', title).replace('_', ',')  # 去除[]中的东西
     title = re.sub(r'\d+', r'', title)
     params = '{"Num":10,"Text":"%s"}' % title
     req.from_json_string(params)
     resp = client.KeywordsExtraction(req)
     return [item.Word for item in resp.Keywords]
+
+
+def getFileAbbr(title):
+    return hashlib.md5(title.encode('utf-8')).hexdigest()[-8:]
 
 
 class MdArticle(object):
@@ -75,6 +83,7 @@ class MdArticle(object):
         self.date = ''
         self.categories = ''
         self.tags = ''
+        self.abbrlink = ''
         self.data = []
         if self.fullFilePath.strip():
             # 操作文件
@@ -92,6 +101,8 @@ class MdArticle(object):
                                 self.categories = lines[i][12:].strip()
                             elif lines[i].startswith('tags: '):
                                 self.tags = lines[i][5:].strip()
+                            elif lines[i].startswith('abbrlink: '):
+                                self.abbrlink = lines[i][10:].strip()
                         else:
                             endLineNum = i
                             break
@@ -108,12 +119,15 @@ class MdArticle(object):
         (filePath, fullFileName) = os.path.split(self.fullFilePath)
         (fileName, fileExtension) = os.path.splitext(fullFileName)
 
-        self.title = fileName
+        self.title = fileName.replace('[博]', '')
         if not self.date:
             self.date = getFileDatetime(self.fullFilePath)
         self.categories = str(list(getFileCategories(self.fullFilePath)))
         if len(self.tags) <= 2:  # str形式list,至少含有[]2个字符
-            self.tags = str(getFileTags(title=filePath.replace('/',',')+','+self.title))
+            self.tags = str(getFileTags(title=filePath.replace('/', ',') + ',' + self.title))
+        if len(self.abbrlink.strip()) == 0:
+            self.abbrlink = str(getFileAbbr(self.title))
+        abbrMap[self.abbrlink] = abbrMap.get(self.abbrlink, list()).append(fileName)
         return
 
     # 保存到文件中
@@ -130,6 +144,7 @@ class MdArticle(object):
         filePrefixLines.append('keywords: %s  \n' % str(self.tags).replace('[', '').replace(']', '').replace("'", ''))
         # 收尾
         filePrefixLines.append('toc: true  \n')
+        filePrefixLines.append('abbrlink: %s  \n' % self.abbrlink)
         if self.title.find('[密]') > -1:
             filePrefixLines.append('password: xxxxyyyy  \n')
         filePrefixLines.append('\n---\n')
@@ -180,3 +195,5 @@ for param in sys.argv[1:]:
         handleDir(param)
     elif os.path.isfile(param):
         handleFile(param)
+    abbrConflictMap = {k: v for k, v in abbrMap.items() if len(v) > 1}
+    print('abbrConflictMap: %s' % str(abbrConflictMap))
