@@ -127,7 +127,7 @@ class MdArticle(object):
             self.tags = str(getFileTags(title=filePath.replace('/', ',') + ',' + self.title))
         if len(self.abbrlink.strip()) == 0:
             self.abbrlink = str(getFileAbbr(self.title))
-        abbrMap[self.abbrlink] = abbrMap.get(self.abbrlink, list()).append(fileName)
+        abbrMap[self.abbrlink] = abbrMap.get(self.abbrlink, list()) + [fileName]
         return
 
     # 保存到文件中
