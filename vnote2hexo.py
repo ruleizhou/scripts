@@ -20,15 +20,15 @@ def getImgs(file_path):
     return list()
 
 
-vnote_dir = '/home/john/文档/vnote_notebooks/vnote'
-hexo_source_dir = '/home/john/my_hexo/source/_posts'
-filter_reg = '\[博\].*\.md'
+# vnote_dir = '/home/john/文档/vnote_notebooks/vnote'
+# hexo_source_dir = '/home/john/my_hexo/source/_posts'
+# filter_reg = '\[博\].*\.md'
 
-# print('params:' + str(sys.argv[1:]))
-#
-# vnote_dir = sys.argv[1]
-# hexo_source_dir = sys.argv[2]
-# filter_reg = sys.argv[3]
+print('params:' + str(sys.argv[1:]))
+
+vnote_dir = sys.argv[1]
+hexo_source_dir = sys.argv[2]
+filter_reg = sys.argv[3]
 hexo_md_paths = list()
 for dirpath, dirnames, filenames in os.walk(vnote_dir):
     for name in filenames:
@@ -49,6 +49,8 @@ for dirpath, dirnames, filenames in os.walk(vnote_dir):
                 content = content.replace('_v_images', 'images')
                 # (xx.png =500x) => (xx.png)
                 content = re.sub(r"(png|jpg|jpeg|gif) =\d+x", r"\1", content)
+                f.seek(0)
+                f.truncate()
                 f.seek(0)
                 f.write(content)
 print('hexo_md_paths:%s \n %d' % ('\n'.join(hexo_md_paths), len(hexo_md_paths)))
