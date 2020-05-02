@@ -52,6 +52,8 @@ hexo_md_paths = list()
 lost_imgs = list()
 
 for dirpath, dirnames, filenames in os.walk(vnote_dir):
+    if dirpath.find('_v_recycle_bin') > -1:
+        continue
     for name in filenames:
         if re.search(filter_reg, name, re.M | re.I):
             # 采集文中图片
