@@ -97,7 +97,7 @@ vnote2hexo.sh废弃(sh复杂命令调试麻烦)
 vnote2hexo.py  
 用法:  
 ```
-python vnote2hexo.py /home/john/文档/vnote_notebooks/vnote /home/john/my_hexo/source '\[博\].*\.md'
+python vnote2hexo.py /home/john/文档/vnote_notebooks/vnote /home/john/my_hexo/source '\[博\].*\.md' '/home/john/my_hexo/source/images_out/water.png'
 ```
 
 ## 03,cta_machineInfo.py  

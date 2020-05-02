@@ -9,6 +9,7 @@
 # 使用方法:python vnote2hexo.py /home/john/文档/vnote_notebooks/vnote /home/john/my_hexo/source "*发布*.md"
 import os, sys, re
 import shutil
+import subprocess
 
 
 def getImgs(file_path):
@@ -20,30 +21,45 @@ def getImgs(file_path):
     return list()
 
 
+# 添加水印
+def waterMark(file_path, water_path):
+    if not water_path:
+        return
+    ffmpeg_cmd = "ffmpeg -i %s -i %s -filter_complex 'overlay=main_w-overlay_w-10 : main_h-overlay_h-10' %s -y" % (
+        file_path, water_path, file_path)
+    subprocess.call(ffmpeg_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
 # vnote_dir = '/home/john/文档/vnote_notebooks/vnote'
 # hexo_source_dir = '/home/john/my_hexo/source'
 # filter_reg = '\[博\].*\.md'
+# water_path = '/home/john/my_hexo/source/images_out/water.png'
 
 print('params:' + str(sys.argv[1:]))
 
 vnote_dir = sys.argv[1]
 hexo_source_dir = sys.argv[2]
 filter_reg = sys.argv[3]
+water_path = sys.argv[4]
+
 hexo_md_paths = list()
 lost_imgs = list()
+
 for dirpath, dirnames, filenames in os.walk(vnote_dir):
     for name in filenames:
         if re.search(filter_reg, name, re.M | re.I):
             # 采集文中图片
-            img_paths = [dirpath + '/_v_images/' + img for img in getImgs(dirpath + '/' + name)]
+            img_names = [img_name for img_name in getImgs(dirpath + '/' + name)]
             # 文章copy到文章文件夹
+            vnote_img_dir = dirpath + '/_v_images'
             hexo_md_dir = hexo_source_dir + '/_posts'
             hexo_img_dir = hexo_source_dir + '/images'
             shutil.copy(dirpath + '/' + name, hexo_md_dir)
             # 图片copy到图片文件夹
-            if img_paths:
+            if img_names:
                 try:
-                    list(map(lambda img_path: shutil.copy(img_path, hexo_img_dir), img_paths))
+                    list(map(lambda img_name: shutil.copy(vnote_img_dir + '/' + img_name, hexo_img_dir), img_names))
+                    list(map(lambda img_name: waterMark(hexo_img_dir + '/' + img_name, water_path), img_names))
                 except Exception as e:
                     lost_imgs.append(e.filename)
             # 文章内部修改图片引用路径
