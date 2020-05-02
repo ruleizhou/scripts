@@ -16,12 +16,12 @@ def getImgs(file_path):
         content = ''.join(f.readlines())
         findAll = re.findall(r"([\d_]+\.(png|jpg|jpeg|gif))", content, re.I | re.S | re.M)
         if findAll:
-            return findAll[0]
+            return [k for k, v in findAll]
     return list()
 
 
 # vnote_dir = '/home/john/文档/vnote_notebooks/vnote'
-# hexo_source_dir = '/home/john/my_hexo/source/_posts'
+# hexo_source_dir = '/home/john/my_hexo/source'
 # filter_reg = '\[博\].*\.md'
 
 print('params:' + str(sys.argv[1:]))
@@ -30,18 +30,24 @@ vnote_dir = sys.argv[1]
 hexo_source_dir = sys.argv[2]
 filter_reg = sys.argv[3]
 hexo_md_paths = list()
+lost_imgs = list()
 for dirpath, dirnames, filenames in os.walk(vnote_dir):
     for name in filenames:
         if re.search(filter_reg, name, re.M | re.I):
             # 采集文中图片
-            img_paths = [dirpath + '/' + img for img in getImgs(dirpath + '/' + name)]
+            img_paths = [dirpath + '/_v_images/' + img for img in getImgs(dirpath + '/' + name)]
             # 文章copy到文章文件夹
-            shutil.copy(dirpath + '/' + name, hexo_source_dir)
+            hexo_md_dir = hexo_source_dir + '/_posts'
+            hexo_img_dir = hexo_source_dir + '/images'
+            shutil.copy(dirpath + '/' + name, hexo_md_dir)
             # 图片copy到图片文件夹
             if img_paths:
-                map(lambda x: shutil.copy(img_path, vnote_dir + '/images'), img_paths)
+                try:
+                    list(map(lambda img_path: shutil.copy(img_path, hexo_img_dir), img_paths))
+                except Exception as e:
+                    lost_imgs.append(e.filename)
             # 文章内部修改图片引用路径
-            hexo_md_path = hexo_source_dir + '/' + name
+            hexo_md_path = hexo_md_dir + '/' + name
             hexo_md_paths.append(hexo_md_path)
             with open(hexo_md_path, 'r+', encoding='utf-8') as f:
                 content = ''.join(f.readlines())
@@ -53,4 +59,5 @@ for dirpath, dirnames, filenames in os.walk(vnote_dir):
                 f.truncate()
                 f.seek(0)
                 f.write(content)
-print('hexo_md_paths:%s \n %d' % ('\n'.join(hexo_md_paths), len(hexo_md_paths)))
+print('hexo_md_paths:\n%s \n %d' % ('\n'.join(hexo_md_paths), len(hexo_md_paths)))
+print('hexo_img_lost:\n%s \n %d' % ('\n'.join(lost_imgs), len(lost_imgs)))
