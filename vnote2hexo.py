@@ -14,35 +14,41 @@ import shutil
 def getImgs(file_path):
     with open(file_path, 'r') as f:
         content = ''.join(f.readlines())
-        return re.findall(r"([\d_]+\.(png|jpg|jpeg|gif))", content, re.I | re.S | re.M)[0]
+        findAll = re.findall(r"([\d_]+\.(png|jpg|jpeg|gif))", content, re.I | re.S | re.M)
+        if findAll:
+            return findAll[0]
     return list()
 
 
 vnote_dir = '/home/john/文档/vnote_notebooks/vnote'
-hexo_source_dir = '/home/john/my_hexo/source'
+hexo_source_dir = '/home/john/my_hexo/source/_posts'
 filter_reg = '\[博\].*\.md'
 
+# print('params:' + str(sys.argv[1:]))
+#
+# vnote_dir = sys.argv[1]
+# hexo_source_dir = sys.argv[2]
+# filter_reg = sys.argv[3]
+hexo_md_paths = list()
 for dirpath, dirnames, filenames in os.walk(vnote_dir):
     for name in filenames:
         if re.search(filter_reg, name, re.M | re.I):
             # 采集文中图片
             img_paths = [dirpath + '/' + img for img in getImgs(dirpath + '/' + name)]
             # 文章copy到文章文件夹
-            shutil.copy(dirpath + '/' + name, vnote_dir)
+            shutil.copy(dirpath + '/' + name, hexo_source_dir)
             # 图片copy到图片文件夹
             if img_paths:
                 map(lambda x: shutil.copy(img_path, vnote_dir + '/images'), img_paths)
             # 文章内部修改图片引用路径
-            hexo_md_path = vnote_dir + '/' + name
-            with open(hexo_md_path, 'w') as f:
+            hexo_md_path = hexo_source_dir + '/' + name
+            hexo_md_paths.append(hexo_md_path)
+            with open(hexo_md_path, 'r+', encoding='utf-8') as f:
                 content = ''.join(f.readlines())
                 # _v_images => images
                 content = content.replace('_v_images', 'images')
                 # (xx.png =500x) => (xx.png)
                 content = re.sub(r"(png|jpg|jpeg|gif) =\d+x", r"\1", content)
+                f.seek(0)
                 f.write(content)
-
-# # 发布到hexo
-# echo "发布到hexo"
-# cd $2/../;hexo g && hexo deploy
-# echo "完成"
+print('hexo_md_paths:%s \n %d' % ('\n'.join(hexo_md_paths), len(hexo_md_paths)))
