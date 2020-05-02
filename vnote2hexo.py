@@ -22,10 +22,6 @@ vnote_dir = '/home/john/文档/vnote_notebooks/vnote'
 hexo_source_dir = '/home/john/my_hexo/source'
 filter_reg = '\[博\].*\.md'
 
-# 遍历vnote文件，如果dict存在文件名的abbr，则写入vnote的md中
-# 收集文章的图片路径
-
-
 for dirpath, dirnames, filenames in os.walk(vnote_dir):
     for name in filenames:
         if re.search(filter_reg, name, re.M | re.I):
