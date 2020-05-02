@@ -13,11 +13,11 @@
 # ---
 
 # 用法说明和举例
-# 用法 python md2hexo 目录
+# 用法 python vnoteMdFormat.py 目录
 #   递归查询目录下所有md文件，生成md文件的前缀信息
-# 用法 python md2hexo ./目录1/目录2/文件.md(x)
+# 用法 python vnoteMdFormat.py ./目录1/目录2/文件.md(x)
 #   生成文件的前缀，此时文件的cate=目录1,目录2
-# 用法 python md2hexo 文件.md
+# 用法 python vnoteMdFormat.py 文件.md
 
 import io
 import os
