@@ -34,13 +34,19 @@ def waterMark(file_path, water_path):
 # hexo_source_dir = '/home/john/my_hexo/source'
 # filter_reg = '\[博\].*\.md'
 # water_path = '/home/john/my_hexo/source/images_out/water.png'
-
+#
 print('params:' + str(sys.argv[1:]))
 
 vnote_dir = sys.argv[1]
 hexo_source_dir = sys.argv[2]
 filter_reg = sys.argv[3]
 water_path = sys.argv[4]
+
+print('清空hexo文件夹_posts,images')
+hexo_md_dir = hexo_source_dir + '/_posts'
+hexo_img_dir = hexo_source_dir + '/images'
+clean_hexo_cmd = 'rm -rf %s/* %s/*' % (hexo_md_dir, hexo_img_dir)
+subprocess.call(clean_hexo_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 hexo_md_paths = list()
 lost_imgs = list()
@@ -52,8 +58,6 @@ for dirpath, dirnames, filenames in os.walk(vnote_dir):
             img_names = [img_name for img_name in getImgs(dirpath + '/' + name)]
             # 文章copy到文章文件夹
             vnote_img_dir = dirpath + '/_v_images'
-            hexo_md_dir = hexo_source_dir + '/_posts'
-            hexo_img_dir = hexo_source_dir + '/images'
             shutil.copy(dirpath + '/' + name, hexo_md_dir)
             # 图片copy到图片文件夹
             if img_names:
