@@ -73,7 +73,7 @@ cp vnoteMdFormat.py /home/john/文档/vnote_notebooks/vnote/ && cd /home/john/�
 02,阅读代码可以发现，对于文章标题(也即是文件名)如果含有[密]，则自动增加字段password: xxxxyyyy ,为了实现对文章添加密码，没有密码无法访问（需要hexo插件配合)  
 
 
-## 02,vnote2hexo.sh
+## 02,vnote2hexo.sh(vnote2hexo.py)
 基于vnote的自动发布  
 将vnote中的符合条件的文章（.md文件）,复制到hexo/source/_posts/,  
 符合条件的md文章里面涉及的图片，复制到hexo/source/images/(并修改其内部引用路径格式)  
@@ -91,6 +91,14 @@ hexo的source文件夹(路径):\~/my_hexo/source/_posts/(后面的_posts脚本�
 hexo的source文件夹(路径):\~/my_hexo/source/images/(后面的images脚本写死的)  
 代码行数不多，但是较难看懂，主要是awk语法使用较多，其中很多涉及多次转义的字符  
 参考本博客博文：脚本_vnote同步到hexo步骤[博]（自行搜索）  
+
+vnote2hexo.sh废弃(sh复杂命令调试麻烦)  
+
+vnote2hexo.py  
+用法:  
+```
+python vnote2hexo.py /home/john/文档/vnote_notebooks/vnote /home/john/my_hexo/source "*发布*.md"  
+```
 
 ## 03,cta_machineInfo.py  
 功能：显示ubuntu下cta软件获取到的机器信息（无法通过验证时，自查问题使用）  
