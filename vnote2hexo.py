@@ -72,7 +72,7 @@ for dirpath, dirnames, filenames in os.walk(vnote_dir):
             with open(hexo_md_path, 'r+', encoding='utf-8') as f:
                 content = ''.join(f.readlines())
                 # _v_images => images
-                content = content.replace('_v_images', 'images')
+                content = content.replace('_v_images/', '/images/')
                 # (xx.png =500x) => (xx.png)
                 content = re.sub(r"(png|jpg|jpeg|gif) =\d+x", r"\1", content)
                 f.seek(0)
