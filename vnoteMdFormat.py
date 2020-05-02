@@ -195,5 +195,5 @@ for param in sys.argv[1:]:
         handleDir(param)
     elif os.path.isfile(param):
         handleFile(param)
-    abbrConflictMap = {k: v for k, v in abbrMap.items() if len(v) > 1}
-    print('abbrConflictMap: %s' % str(abbrConflictMap))
+abbrConflictMap = {k: v for k, v in abbrMap.items() if len(v) > 1}
+print('abbrConflictMap: %s' % str(abbrConflictMap))
