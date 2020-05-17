@@ -54,11 +54,11 @@ def validUrl(url):
     return ''
 
 
-formatStr = 'rtmp,rtsp'
-webpageUrl = 'https://www.optbbs.com/thread-3439203-1-1.html'
+# formatStr = 'rtmp,rtsp'
+# webpageUrl = 'https://www.optbbs.com/thread-3439203-1-1.html'
 
-# formatStr = str(sys.arhttps://www.optbbs.com/thread-3439203-1-1.htmlgv[1]).split(',')
-# webpageUrl = sys.argv[2]
+formatStr = str(sys.argv[1])
+webpageUrl = sys.argv[2]
 print('params:' + str(sys.argv[1:]))
 waitUrls = process(webpageUrl)
 print('waitUrls len:%s' % len(waitUrls))
