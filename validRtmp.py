@@ -47,7 +47,7 @@ def validUrl(url):
     try:
         cap = cv2.VideoCapture(url)
         ret, frame = cap.read()
-        if frame:
+        if ret:
             return url
     except:
         pass
