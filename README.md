@@ -134,3 +134,13 @@ hexo_post_dir hexo的_post文件夹路径
 vnote_dir vnote的md文件夹路径  
 line_num 写到vnote里面md文件的第几行，一般第一行是---,第二行是title: xxx,看自己文件情况  
 实例：python hexoAddr2Vnote.py '/home/john/my_hexo/source/_posts' '/home/john/文档/vnote_notebooks/vnote' 3  
+
+## 07,validRtmp.py
+寻找过滤有效的rtmp,or,rtsp直播地址  
+python validRtmp.py rtmp,rtsp https://www.optbbs.com/thread-3439203-1-1.html  
+步骤  
+```
+1,下载页面：https://www.optbbs.com/thread-3439203-1-1.html（避免使用csdn等，需点击触发显示全部的网页）  
+2,正则匹配：rtmp://, rtsp://等地址  
+3,[rtmp;//xx.com,rtsp://yy.com]使用ping+cv2.read()验证有效性  
+```
