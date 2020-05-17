@@ -43,6 +43,17 @@ def process(url):
     return list()
 
 
+def validUrl(url):
+    try:
+        cap = cv2.VideoCapture(url)
+        ret, frame = cap.read()
+        if frame:
+            return url
+    except:
+        pass
+    return ''
+
+
 formatStr = 'rtmp,rtsp'
 webpageUrl = 'https://www.optbbs.com/thread-3439203-1-1.html'
 
@@ -50,13 +61,13 @@ webpageUrl = 'https://www.optbbs.com/thread-3439203-1-1.html'
 # webpageUrl = sys.argv[2]
 print('params:' + str(sys.argv[1:]))
 waitUrls = process(webpageUrl)
+print('waitUrls len:%s' % len(waitUrls))
 validUrls = list()
-for url in waitUrls:
-    try:
-        cap = cv2.VideoCapture(url)
-        ret, frame = cap.read()
-        if frame:
-            validUrls.append(url)
-    except:
-        pass
-print('validUrls:%s' % str(validUrls))
+
+pool = Pool(processes=max(1, cpu_count() - 1))
+validUrls = pool.map(validUrl, waitUrls)
+pool.close()
+pool.join()
+validUrls = [x for x in set(validUrls) if not x]
+
+print('validUrls: len %s \n %s' % (len(validUrls), str(validUrls)))
