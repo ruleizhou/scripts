@@ -68,6 +68,6 @@ pool = Pool(processes=max(1, cpu_count() - 1))
 validUrls = pool.map(validUrl, waitUrls)
 pool.close()
 pool.join()
-validUrls = [x for x in set(validUrls) if not x]
+validUrls = [x for x in set(validUrls) if x]
 
 print('validUrls: len %s \n %s' % (len(validUrls), str(validUrls)))
