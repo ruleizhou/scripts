@@ -86,3 +86,4 @@ for depth in range(maxDepth):
     waitSet = waitSet - handleSet
     print('maxDepth:%s waitSet len:%s handleSet len:%s' % (depth, len(waitSet), len(handleSet)))
 print('handleSet len:%s \nhandleSet:%s' % (len(handleSet), list(handleSet)))
+print('all end:' + str(datetime.datetime.now()))
