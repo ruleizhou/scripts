@@ -45,12 +45,13 @@ water_path = sys.argv[4]
 print('清空hexo文件夹_posts,images')
 hexo_md_dir = hexo_source_dir + '/_posts'
 hexo_img_dir = hexo_source_dir + '/images'
-clean_hexo_cmd = 'rm -rf %s/* %s/*' % (hexo_md_dir, hexo_img_dir)
+clean_hexo_cmd = 'rm -rf %s/*' % (hexo_md_dir)
 subprocess.call(clean_hexo_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 hexo_md_paths = list()
 lost_imgs = list()
-
+new_imgs = list()
+hexo_exist_imgs = set(os.listdir(hexo_img_dir))
 for dirpath, dirnames, filenames in os.walk(vnote_dir):
     if dirpath.find('_v_recycle_bin') > -1:
         continue
@@ -59,13 +60,15 @@ for dirpath, dirnames, filenames in os.walk(vnote_dir):
             # 采集文中图片
             img_names = [img_name for img_name in getImgs(dirpath + '/' + name)]
             # 文章copy到文章文件夹
-            vnote_img_dir = dirpath + '/_v_images'
             shutil.copy(dirpath + '/' + name, hexo_md_dir)
             # 图片copy到图片文件夹
+            img_names = list(set(img_names) - set(hexo_exist_imgs))
             if img_names:
                 try:
+                    vnote_img_dir = dirpath + '/_v_images'
                     list(map(lambda img_name: shutil.copy(vnote_img_dir + '/' + img_name, hexo_img_dir), img_names))
                     list(map(lambda img_name: waterMark(hexo_img_dir + '/' + img_name, water_path), img_names))
+                    new_imgs.extend(img_names)
                 except Exception as e:
                     lost_imgs.append(e.filename)
             # 文章内部修改图片引用路径
@@ -82,4 +85,5 @@ for dirpath, dirnames, filenames in os.walk(vnote_dir):
                 f.seek(0)
                 f.write(content)
 print('hexo_md_paths:\n%s \n %d' % ('\n'.join(hexo_md_paths), len(hexo_md_paths)))
+print('hexo_img_new:\n%s \n %d' % ('\n'.join(new_imgs), len(new_imgs)))
 print('hexo_img_lost:\n%s \n %d' % ('\n'.join(lost_imgs), len(lost_imgs)))
