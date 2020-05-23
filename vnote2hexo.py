@@ -66,7 +66,9 @@ for dirpath, dirnames, filenames in os.walk(vnote_dir):
             if img_names:
                 try:
                     vnote_img_dir = dirpath + '/_v_images'
+                    # 图片复制
                     list(map(lambda img_name: shutil.copy(vnote_img_dir + '/' + img_name, hexo_img_dir), img_names))
+                    # 图片加水印
                     list(map(lambda img_name: waterMark(hexo_img_dir + '/' + img_name, water_path), img_names))
                     new_imgs.extend(img_names)
                 except Exception as e:
