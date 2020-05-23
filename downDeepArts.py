@@ -33,17 +33,18 @@ headers = {
     'Cookie': 'BIDUPSID=8C26E1690527F4CB4ED508565EBE810E; PSTM=1586487982; BAIDUID=8C26E1690527F4CBE9EBFA9A228B6F9B:FG=1; BD_HOME=1; H_PS_PSSID=30971_1422_21088_30839_31186_31217_30823_31163; BD_UPN=123353'
 }
 
-# rootUrl = 'https://hexo.yuanjh.cn'
-# suffix = '/links'
-# maxCount = 100
-# maxDepth = 10
+rootUrl = 'https://hexo.yuanjh.cn'
+suffix = '/links'
+maxCount = 100
+maxDepth = 10
 
-rootUrl = sys.argv[1]
-suffix = sys.argv[2]
-maxCount = int(sys.argv[3])
-maxDepth = int(sys.argv[4])
 
-print('params:' + str(sys.argv[1:]))
+# rootUrl = sys.argv[1]
+# suffix = sys.argv[2]
+# maxCount = int(sys.argv[3])
+# maxDepth = int(sys.argv[4])
+#
+# print('params:' + str(sys.argv[1:]))
 
 
 def process(url):
@@ -60,7 +61,8 @@ def process(url):
     return None, list()
 
 
-print('all start:' + str(datetime.datetime.now()))
+startTime = datetime.datetime.now()
+print('all start:' + str(startTime))
 
 # 满足这个pattern的认为是本站文章
 waitSet = set([rootUrl + suffix])
@@ -76,14 +78,17 @@ for depth in range(maxDepth):
         break
     # 挪外面最好，但未有合适处理方案（close无法open）
     pool = Pool(processes=max(1, cpu_count() - 1))
-    results = pool.map(process, waitSet)
+    for waitUrl in waitSet:
+        results = pool.apply_async(process, waitUrl)
     pool.close()
     pool.join()
-
+    results = list(map(lambda x: x.get(), results))
     # 只处理此域名下url
     handleSet = handleSet.union(rootUrl for rootUrl, urls in results if rootUrl)
     waitSet = set(url + suffix for rootUrl, urls in results for url in urls)
     waitSet = waitSet - handleSet
     print('maxDepth:%s waitSet len:%s handleSet len:%s' % (depth, len(waitSet), len(handleSet)))
 print('handleSet len:%s \nhandleSet:%s' % (len(handleSet), list(handleSet)))
-print('all end:' + str(datetime.datetime.now()))
+endTime = datetime.datetime.now()
+print('all end:' + str(endTime))
+print('spend seconds:%s' % (endTime - startTime).total_seconds())
