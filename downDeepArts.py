@@ -1,5 +1,5 @@
 # encoding: UTF-8
-
+# 环境:py35(gevent)
 
 # 递归采集友情链接
 # python xx.py rootUrl suffix maxCount maxDepth
@@ -18,6 +18,7 @@ import re
 import sys
 from multiprocessing import cpu_count, Pool
 
+import gevent
 import requests
 
 headers = {
@@ -33,17 +34,17 @@ headers = {
     'Cookie': 'BIDUPSID=8C26E1690527F4CB4ED508565EBE810E; PSTM=1586487982; BAIDUID=8C26E1690527F4CBE9EBFA9A228B6F9B:FG=1; BD_HOME=1; H_PS_PSSID=30971_1422_21088_30839_31186_31217_30823_31163; BD_UPN=123353'
 }
 
-# rootUrl = 'https://hexo.yuanjh.cn'
-# suffix = '/links'
-# maxCount = 100
-# maxDepth = 10
+rootUrl = 'https://hexo.yuanjh.cn'
+suffix = '/links'
+maxCount = 100
+maxDepth = 10
 
-rootUrl = sys.argv[1]
-suffix = sys.argv[2]
-maxCount = int(sys.argv[3])
-maxDepth = int(sys.argv[4])
-
-print('params:' + str(sys.argv[1:]))
+# rootUrl = sys.argv[1]
+# suffix = sys.argv[2]
+# maxCount = int(sys.argv[3])
+# maxDepth = int(sys.argv[4])
+#
+# print('params:' + str(sys.argv[1:]))
 
 
 def process(url):
@@ -80,9 +81,8 @@ for depth in range(maxDepth):
     # 挪外面最好，但未有合适处理方案（close无法open）
     pool = Pool(processes=max(1, cpu_count() - 1))
     for waitUrl in waitSet:
-        results_tmp.append(pool.apply_async(process, (waitUrl,)))
-    pool.close()
-    pool.join()
+        results_tmp.append(gevent.spawn(process, waitUrl))
+    gevent.joinall(results_tmp)
     for x in results_tmp:
         results.append(x.get())
     # 只处理此域名下url
