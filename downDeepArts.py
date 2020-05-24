@@ -2,8 +2,8 @@
 # 环境:py35(gevent)
 
 # 递归采集友情链接
-# python xx.py rootUrl suffix maxCount maxDepth
-# python xx.py 'https://hexo.yuanjh.cn' '/links' 100 10
+# python xx.py rootUrl suffix maxCount
+# python xx.py 'https://hexo.yuanjh.cn' '/links' 100
 # 步骤
 # 1,https://hexo.yuanjh.cn => https://hexo.yuanjh.cn/links
 # 2,https://hexo.yuanjh.cn/links => [http://xxx.yy.com,https://zz.ff.cn]
@@ -71,12 +71,10 @@ waitQueue.put(rootUrl + suffix)
 waitQueueSet = set(rootUrl + suffix)
 successSet = set()
 faultSet = set()
-# 按照maxDepth限制，分批次处理（想了一堆并行化方法，最后决定采用这种，（思路）简单，（并行）朴素，（代码）易懂，（综合）不易错的最老实方案）
-# 核心原则：
-# 01，最慢（网络）的地方采用并行化
-# 02，能不采用多进程机制（锁，队列，消息等）就不采用，角度：代码复杂度，易调试度，系统的外部依赖度
+
 results_tmp = list()
 results = list()
+firstPageSet = set()
 while len(successSet) < maxCount and waitQueue.qsize():
     # 挪外面最好，但未有合适处理方案（close无法open）
     pool = Pool(processes=max(1, cpu_count() - 1))
@@ -90,9 +88,12 @@ while len(successSet) < maxCount and waitQueue.qsize():
     addWaitQueueSet = set([url + suffix for rootUrl, urls in results for url in urls])
     [waitQueue.put(url) for url in (addWaitQueueSet - waitQueueSet)]
     waitQueueSet = waitQueueSet.union(addWaitQueueSet)
+    if not firstPageSet:
+        # rootUrl already has friend links
+        firstPageSet = addWaitQueueSet
     print('waitSet len:%s successSet:%s faultSet:%s' % (waitQueue.qsize(), len(successSet), len(faultSet)))
 print('successSet:%s faultSet:%s' % (len(successSet), len(faultSet)))
-print('successSet:%s' % list(successSet))
+print('successSet minus firstPageSet:%s' % list(successSet - firstPageSet))
 endTime = datetime.datetime.now()
 print('all end:' + str(endTime))
 print('spend seconds:%s' % (endTime - startTime).total_seconds())
