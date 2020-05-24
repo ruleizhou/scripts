@@ -77,9 +77,11 @@ results = list()
 firstPageSet = set()
 while len(successSet) < maxCount and waitQueue.qsize():
     # 挪外面最好，但未有合适处理方案（close无法open）
-    results_tmp = [gevent.spawn(process, waitQueue.get()) for _ in
+    pool = Pool(processes=max(1, cpu_count() - 1))
+    results_tmp = [pool.apply_async(process, (waitQueue.get(),)) for _ in
                    range(min(cpu_count() - 1, waitQueue.qsize()))]
-    gevent.joinall(results_tmp)
+    pool.close()
+    pool.join()
     results = [x.get() for x in results_tmp]
     # 只处理此域名下url
     successSet = successSet.union(rootUrl for rootUrl, urls in results if len(urls) > 0)
