@@ -75,23 +75,28 @@ faultSet = set()
 results_tmp = list()
 results = list()
 firstPageSet = set()
+
+
+def handle_data(result):
+    global waitQueueSet
+    url, urls = result
+    if len(urls) > 0:
+        successSet.add(url)
+    else:
+        faultSet.add(url)
+
+    addWaitQueueSet = set([url + suffix for url in urls])
+    [waitQueue.put(url) for url in (addWaitQueueSet - waitQueueSet)]
+    waitQueueSet = waitQueueSet.union(addWaitQueueSet)
+
+
 while len(successSet) < maxCount and waitQueue.qsize():
     # 挪外面最好，但未有合适处理方案（close无法open）
     pool = Pool(processes=max(1, cpu_count() - 1))
-    results_tmp = [pool.apply_async(process, (waitQueue.get(),)) for _ in
+    results_tmp = [pool.apply_async(process, (waitQueue.get(),), callback=handle_data) for _ in
                    range(min(cpu_count() - 1, waitQueue.qsize()))]
     pool.close()
     pool.join()
-    results = [x.get() for x in results_tmp]
-    # 只处理此域名下url
-    successSet = successSet.union(rootUrl for rootUrl, urls in results if len(urls) > 0)
-    faultSet = faultSet.union(rootUrl for rootUrl, urls in results if len(urls) == 0)
-    addWaitQueueSet = set([url + suffix for rootUrl, urls in results for url in urls])
-    [waitQueue.put(url) for url in (addWaitQueueSet - waitQueueSet)]
-    waitQueueSet = waitQueueSet.union(addWaitQueueSet)
-    if not firstPageSet:
-        # rootUrl 已有友联
-        firstPageSet = addWaitQueueSet
     print('waitSet len:%s successSet:%s faultSet:%s' % (waitQueue.qsize(), len(successSet), len(faultSet)))
 print('successSet:%s faultSet:%s' % (len(successSet), len(faultSet)))
 print('successSet minus firstPageSet:%s' % list(successSet - firstPageSet))
