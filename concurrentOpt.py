@@ -3,11 +3,15 @@
 # 测试不同并发下载算法的效率
 
 import datetime
+import multiprocessing
 import re
-import sys
-from multiprocessing import cpu_count, Pool, Queue
+from multiprocessing import cpu_count, Pool
 
 import gevent
+from gevent import monkey  # 从gevent库里导入monkey模块。
+
+monkey.patch_all()  ##monkey.patch_all()能把程序变成协作式运行，就是可以帮助程序实现异步。
+
 import requests
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -58,7 +62,7 @@ def process(url):
 
 
 def down_map():
-    waitQueue = Queue()
+    waitQueue = multiprocessing.Queue()
     [waitQueue.put(url + suffix) for url in urls]
     while waitQueue.qsize():
         pool = Pool(processes=max(1, cpu_count() - 1))
@@ -66,7 +70,7 @@ def down_map():
 
 
 def down_apply_async():
-    waitQueue = Queue()
+    waitQueue = multiprocessing.Queue()
     [waitQueue.put(url + suffix) for url in urls]
     while waitQueue.qsize():
         pool = Pool(processes=max(1, cpu_count() - 1))
@@ -78,8 +82,8 @@ def down_apply_async():
 
 
 def down_gevent():
-    waitQueue = Queue()
-    [waitQueue.put(url + suffix) for url in urls]
+    waitQueue = gevent.queue.Queue()
+    [waitQueue.put_nowait(url + suffix) for url in urls]
     while waitQueue.qsize():
         results_tmp = [gevent.spawn(process, waitQueue.get()) for _ in
                        range(min(cpu_count() - 1, waitQueue.qsize()))]
@@ -102,7 +106,7 @@ for _ in range(4):
 
     time_map['map'] = time_map.get('map', list()) + [(t2 - t1).total_seconds()]
     time_map['apply_async'] = time_map.get('apply_async', list()) + [(t3 - t2).total_seconds()]
-    time_map['gevent'] = time_map.get('gevent', list()) + [(t4 - t3).total_seconds()]
+    time_map['down_gevent'] = time_map.get('down_gevent', list()) + [(t4 - t3).total_seconds()]
 
 time_df = pd.DataFrame(time_map)
 time_df.plot()
