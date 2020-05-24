@@ -8,9 +8,9 @@ import re
 from multiprocessing import cpu_count, Pool
 
 import gevent
-from gevent import monkey  # 从gevent库里导入monkey模块。
+# from gevent import monkey  # 从gevent库里导入monkey模块。
 
-monkey.patch_all()  ##monkey.patch_all()能把程序变成协作式运行，就是可以帮助程序实现异步。
+# monkey.patch_all()  ##monkey.patch_all()能把程序变成协作式运行，就是可以帮助程序实现异步。
 
 import requests
 import pandas as pd
@@ -67,6 +67,7 @@ def down_map():
     while waitQueue.qsize():
         pool = Pool(processes=max(1, cpu_count() - 1))
         results = pool.map(process, [waitQueue.get() for x in range(min(cpu_count() - 1, waitQueue.qsize()))])
+        print('len waitQueue:%s' % waitQueue.qsize())
 
 
 def down_apply_async():
@@ -79,29 +80,31 @@ def down_apply_async():
         pool.close()
         pool.join()
         results = [x.get() for x in results_tmp]
+        print('len waitQueue:%s' % waitQueue.qsize())
 
 
 def down_gevent():
-    waitQueue = gevent.queue.Queue()
-    [waitQueue.put_nowait(url + suffix) for url in urls]
+    waitQueue = multiprocessing.Queue()
+    [waitQueue.put(url + suffix) for url in urls]
     while waitQueue.qsize():
         results_tmp = [gevent.spawn(process, waitQueue.get()) for _ in
                        range(min(cpu_count() - 1, waitQueue.qsize()))]
         gevent.joinall(results_tmp)
         results = [x.get() for x in results_tmp]
+        print('len waitQueue:%s' % waitQueue.qsize())
 
 
 time_map = dict()
 for _ in range(4):
     t1 = datetime.datetime.now()
     down_map()
-    print('down_map')
+    print('end down_map')
     t2 = datetime.datetime.now()
     down_apply_async()
-    print('down_apply_async')
+    print('end down_apply_async')
     t3 = datetime.datetime.now()
     down_gevent()
-    print('down_gevent')
+    print('end down_gevent')
     t4 = datetime.datetime.now()
 
     time_map['map'] = time_map.get('map', list()) + [(t2 - t1).total_seconds()]
