@@ -9,6 +9,7 @@ from multiprocessing import cpu_count, Pool, Queue
 
 import gevent
 import requests
+import pandas as pd
 
 headers = {
     'Connection': 'keep-alive',
@@ -26,13 +27,6 @@ headers = {
 rootUrl = 'https://hexo.yuanjh.cn'
 suffix = '/links'
 maxCount = 50
-import pandas as pd
-
-# rootUrl = sys.argv[1]
-# suffix = sys.argv[2]
-# maxCount = int(sys.argv[3])
-#
-# print('params:' + str(sys.argv[1:]))
 
 
 def process(url):
@@ -47,38 +41,6 @@ def process(url):
     except Exception as e:
         pass
     return url, list()
-
-
-urls = ['http://www.1688.com/links', 'https://www.aye.ink/links', 'https://cherrycat.gitee.io/links',
-        'https://mmyyll.ml/links', 'http://www.alibabagroup.com/links', 'https://www.jsdelivr.com/links',
-        'https://iwalyou.com/links', 'http://www.oschina.net/links', 'https://www.etuan.com/links',
-        'https://developer.aliyun.com/links', 'http://www.fezhu.top/links', 'https://yiki.tech/links',
-        'https://saky.site/links', 'http://www.tuicool.com/links', 'https://maka.im/links',
-        'https://www.cnblogs.com/links', 'http://www.alipay.com/links', 'http://help.baidu.com/links',
-        'https://starrycat.me/links', 'https://status.qiniu.com/links', 'https://career.qiniu.com/links',
-        'https://ctz45562.github.io/links', 'http://tieba.baidu.com/links', 'https://bestzuo.cn/links',
-        'https://www.ktbear.top/links', 'https://www.legends-killer.cq.cn/links', 'http://qingting.baidu.com/links',
-        'https://hfanss.com/links', 'https://huadonghu.com/links', 'https://leetcode-cn.com/links',
-        'http://lovefc.cn/links', 'https://zfans.xyz/links', 'http://career.qiniu.com/links',
-        'https://blog.badapple.pro/links', 'https://worktile.com/links', 'https://portal.qiniu.com/links',
-        'https://market.aliyun.com/links', 'https://pbas.club/links', 'https://sg.alibabacloud.com/links',
-        'https://us.alibabacloud.com/links', 'https://qoogle.top/links', 'https://perry96.com/links',
-        'https://www.ilovea.asia/links', 'https://blog.qiniu.com/links', 'http://github.com/links',
-        'http://weibo.com/links', 'https://blog.ojhdt.com/links', 'https://au.alibabacloud.com/links',
-        'https://love109.cn/links', 'http://jianyi.baidu.com/links', 'https://www.wolfdan.cn/links',
-        'https://www.gugugu.dev/links', 'http://wenku.baidu.com/links', 'https://xwmrcj.com/links',
-        'https://cf.cndrew.cn/links', 'https://gitee.com/links', 'https://www.aliyun.com/links',
-        'https://www.alibabacloud.com/links', 'https://my.alibabacloud.com/links', 'https://sso.qiniu.com/links',
-        'https://hasaik.com/links', 'https://et.aliyun.com/links', 'http://www.cocoachina.com/links',
-        'http://unlcedemon.online/links', 'https://hk.alibabacloud.com/links', 'https://boiltask.com/links',
-        'https://www.w3cschool.cn/links', 'https://crosschannel.cc/links', 'http://image.baidu.com/links',
-        'https://www.julydate.com/links', 'http://www.lostfawn.cn/links', 'http://www.dragonbaby308.com/links',
-        'https://www.orchid-any.cf/links', 'http://v.baidu.com/links', 'https://lruihao.cn/links',
-        'https://weibo.com/links', 'https://jambing.cn/links', 'https://www.xiongtianci.com/links',
-        'http://absi2011.is-programmer.com/links', 'https://blog.berd.moe/links', 'https://www.qiniu.com/links',
-        'https://wblog.tech/links', 'https://www.zhihu.com/links', 'https://tongji.baidu.com/links',
-        'https://9527dhx.top/links', 'https://www.dreamwings.cn/links', 'http://www.baidu.com/links',
-        'https://www.hojun.cn/links', 'http://zhidao.baidu.com/links']
 
 
 def down(method='map'):
