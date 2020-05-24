@@ -16,7 +16,7 @@
 import datetime
 import re
 import sys
-from multiprocessing import cpu_count, Pool
+from multiprocessing import cpu_count, Pool, Queue
 
 import gevent
 import requests
@@ -39,6 +39,7 @@ suffix = '/links'
 maxCount = 100
 maxDepth = 10
 
+
 # rootUrl = sys.argv[1]
 # suffix = sys.argv[2]
 # maxCount = int(sys.argv[3])
@@ -51,46 +52,47 @@ def process(url):
     try:
         response = requests.get(url, headers=headers, timeout=(3, 7))
         if not response.ok:
-            return None, list()
+            return url, list()
         content = response.text.replace(" ", "")
         res_url = r"href=[\"\'](https?://[^/'\"\?><]+)"
         urls = re.findall(res_url, content, re.I | re.S | re.M)
         return url, urls
     except Exception as e:
         pass
-    return None, list()
+    return url, list()
 
 
 startTime = datetime.datetime.now()
 print('all start:' + str(startTime))
 
 # 满足这个pattern的认为是本站文章
-waitSet = set([rootUrl + suffix])
-handleSet = set()
+waitQueue = Queue()
+waitQueue.put(rootUrl + suffix)
+waitQueueSet = set(rootUrl + suffix)
+successSet = set()
+faultSet = set()
 # 按照maxDepth限制，分批次处理（想了一堆并行化方法，最后决定采用这种，（思路）简单，（并行）朴素，（代码）易懂，（综合）不易错的最老实方案）
 # 核心原则：
 # 01，最慢（网络）的地方采用并行化
 # 02，能不采用多进程机制（锁，队列，消息等）就不采用，角度：代码复杂度，易调试度，系统的外部依赖度
 results_tmp = list()
 results = list()
-for depth in range(maxDepth):
-    if len(handleSet) >= maxCount:
-        break
-    if len(waitSet) == 0:
-        break
+while len(successSet) < maxCount and waitQueue.qsize():
     # 挪外面最好，但未有合适处理方案（close无法open）
     pool = Pool(processes=max(1, cpu_count() - 1))
-    for waitUrl in waitSet:
-        results_tmp.append(gevent.spawn(process, waitUrl))
-    gevent.joinall(results_tmp)
-    for x in results_tmp:
-        results.append(x.get())
+    results = pool.map(process, [waitQueue.get() for x in range(min(cpu_count() - 1, waitQueue.qsize()))])
+    pool.close()
+    pool.join()
+
     # 只处理此域名下url
-    handleSet = handleSet.union(rootUrl for rootUrl, urls in results if rootUrl)
-    waitSet = set(url + suffix for rootUrl, urls in results for url in urls)
-    waitSet = waitSet - handleSet
-    print('maxDepth:%s waitSet len:%s handleSet len:%s' % (depth, len(waitSet), len(handleSet)))
-print('handleSet len:%s \nhandleSet:%s' % (len(handleSet), list(handleSet)))
+    successSet = successSet.union(rootUrl for rootUrl, urls in results if len(urls) > 0)
+    faultSet = faultSet.union(rootUrl for rootUrl, urls in results if len(urls) == 0)
+    addWaitQueueSet = set([url + suffix for rootUrl, urls in results for url in urls])
+    [waitQueue.put(url) for url in (addWaitQueueSet - waitQueueSet)]
+    waitQueueSet = waitQueueSet.union(addWaitQueueSet)
+    print('waitSet len:%s successSet:%s faultSet:%s' % (waitQueue.qsize(), len(successSet), len(faultSet)))
+print('successSet:%s faultSet:%s' % (len(successSet), len(faultSet)))
+print('successSet:%s' % list(successSet))
 endTime = datetime.datetime.now()
 print('all end:' + str(endTime))
 print('spend seconds:%s' % (endTime - startTime).total_seconds())
