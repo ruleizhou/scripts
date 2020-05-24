@@ -89,7 +89,7 @@ while len(successSet) < maxCount and waitQueue.qsize():
     [waitQueue.put(url) for url in (addWaitQueueSet - waitQueueSet)]
     waitQueueSet = waitQueueSet.union(addWaitQueueSet)
     if not firstPageSet:
-        # rootUrl already has friend links
+        # rootUrl 已有友联
         firstPageSet = addWaitQueueSet
     print('waitSet len:%s successSet:%s faultSet:%s' % (waitQueue.qsize(), len(successSet), len(faultSet)))
 print('successSet:%s faultSet:%s' % (len(successSet), len(faultSet)))
