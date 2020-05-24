@@ -26,7 +26,7 @@ headers = {
 
 rootUrl = 'https://hexo.yuanjh.cn'
 suffix = '/links'
-maxCount = 50
+maxCount = 5
 
 
 def process(url):
@@ -56,7 +56,7 @@ def down(method='map'):
     while len(successSet) < maxCount and waitQueue.qsize():
         if method == 'map':
             pool = Pool(processes=max(1, cpu_count() - 1))
-            results = pool.map(process, waitSet)
+            results = pool.map(process, [waitQueue.get() for x in range(min(cpu_count() - 1, waitQueue.qsize()))])
         elif method == 'apply_async':
             pool = Pool(processes=max(1, cpu_count() - 1))
             results_tmp = [pool.apply_async(process, (waitQueue.get(),)) for _ in
@@ -64,68 +64,70 @@ def down(method='map'):
             pool.close()
             pool.join()
             results = [x.get() for x in results_tmp]
-        elif method == 'gevent':
-            results_tmp = [gevent.spawn(process, waitQueue.get()) for _ in
-                           range(min(cpu_count() - 1, waitQueue.qsize()))]
-            gevent.joinall(results_tmp)
-            results = [x.get() for x in results_tmp]
+        # elif method == 'gevent':
+        #     results_tmp = [gevent.spawn(process, waitQueue.get()) for _ in
+        #                    range(min(cpu_count() - 1, waitQueue.qsize()))]
+        #     gevent.joinall(results_tmp)
+        #     results = [x.get() for x in results_tmp]
         # 只处理此域名下url
         successSet = successSet.union(rootUrl for rootUrl, urls in results if len(urls) > 0)
         faultSet = faultSet.union(rootUrl for rootUrl, urls in results if len(urls) == 0)
         addWaitQueueSet = set([url + suffix for rootUrl, urls in results for url in urls])
         [waitQueue.put(url) for url in (addWaitQueueSet - waitQueueSet)]
         waitQueueSet = waitQueueSet.union(addWaitQueueSet)
-
-
-def down_callback():
-    # 满足这个pattern的认为是本站文章
-    waitQueue = Queue()
-    waitQueue.put(rootUrl + suffix)
-    waitQueueSet = set(rootUrl + suffix)
-    successSet = set()
-    faultSet = set()
-
-    results_tmp = list()
-    results = list()
-    firstPageSet = set()
-
-    def handle_data(result):
-        global waitQueueSet
-        url, urls = result
-        if len(urls) > 0:
-            successSet.add(url)
-        else:
-            faultSet.add(url)
-
-        addWaitQueueSet = set([url + suffix for url in urls])
-        [waitQueue.put(url) for url in (addWaitQueueSet - waitQueueSet)]
-        waitQueueSet = waitQueueSet.union(addWaitQueueSet)
-
-    while len(successSet) < maxCount and waitQueue.qsize():
-        # 挪外面最好，但未有合适处理方案（close无法open）
-        pool = Pool(processes=max(1, cpu_count() - 1))
-        results_tmp = [pool.apply_async(process, (waitQueue.get(),), callback=handle_data) for _ in
-                       range(min(cpu_count() - 1, waitQueue.qsize()))]
-        pool.close()
-        pool.join()
+        print('waitSet len:%s successSet:%s faultSet:%s' % (waitQueue.qsize(), len(successSet), len(faultSet)))
+#
+#
+# def down_callback():
+#     # 满足这个pattern的认为是本站文章
+#     waitQueue = Queue()
+#     waitQueue.put(rootUrl + suffix)
+#     waitQueueSet = set(rootUrl + suffix)
+#     successSet = set()
+#     faultSet = set()
+#
+#     results_tmp = list()
+#     results = list()
+#     firstPageSet = set()
+#
+#     def handle_data(result):
+#         nonlocal waitQueueSet
+#         url, urls = result
+#         if len(urls) > 0:
+#             successSet.add(url)
+#         else:
+#             faultSet.add(url)
+#
+#         addWaitQueueSet = set([url + suffix for url in urls])
+#         [waitQueue.put(url) for url in (addWaitQueueSet - waitQueueSet)]
+#         waitQueueSet = waitQueueSet.union(addWaitQueueSet)
+#
+#     while len(successSet) < maxCount and waitQueue.qsize():
+#         # 挪外面最好，但未有合适处理方案（close无法open）
+#         pool = Pool(processes=max(1, cpu_count() - 1))
+#         results_tmp = [pool.apply_async(process, (waitQueue.get(),), callback=handle_data) for _ in
+#                        range(min(cpu_count() - 1, waitQueue.qsize()))]
+#         pool.close()
+#         pool.join()
+#         print('waitSet len:%s successSet:%s faultSet:%s' % (waitQueue.qsize(), len(successSet), len(faultSet)))
 
 
 time_map = dict()
-for _ in range(10):
+for _ in range(3):
     t1 = datetime.datetime.now()
     down(method='map')
     t2 = datetime.datetime.now()
     down(method='apply_async')
     t3 = datetime.datetime.now()
-    down(method='gevent')
-    t4 = datetime.datetime.now()
-    down_callback()
-    t5 = datetime.datetime.now()
+    # down(method='gevent')
+    # t4 = datetime.datetime.now()
+    # down_callback()
+    # t5 = datetime.datetime.now()
 
     time_map['map'] = time_map.get('map', list()) + [(t2 - t1).total_seconds()]
     time_map['apply_async'] = time_map.get('apply_async', list()) + [(t3 - t2).total_seconds()]
-    time_map['gevent'] = time_map.get('gevent', list()) + [(t4 - t3).total_seconds()]
-    time_map['down_callback'] = time_map.get('down_callback', list()) + [(t5 - t4).total_seconds()]
+    # time_map['gevent'] = time_map.get('gevent', list()) + [(t4 - t3).total_seconds()]
+    # time_map['down_callback'] = time_map.get('down_callback', list()) + [(t5 - t4).total_seconds()]
 
 time_series = pd.Series(time_map)
 time_series.plot()
