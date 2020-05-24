@@ -144,3 +144,6 @@ python validRtmp.py rtmp,rtsp https://www.optbbs.com/thread-3439203-1-1.html
 2,正则匹配：rtmp://, rtsp://等地址  
 3,[rtmp;//xx.com,rtsp://yy.com]使用ping+cv2.read()验证有效性  
 ```
+
+## 08,concurrentOpt.py
+并发网页下载的效率测试  
