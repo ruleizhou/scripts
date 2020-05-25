@@ -44,7 +44,7 @@ urls = ['http://www.zentao.net/links', 'http://www.mopaas.com/links', 'https://w
 
 rootUrl = 'https://hexo.yuanjh.cn'
 suffix = '/links'
-maxCount = 5
+maxCount = 50
 
 
 def process(url):
@@ -95,7 +95,7 @@ def down_gevent():
 
 
 time_map = dict()
-for _ in range(4):
+for _ in range(10):
     t1 = datetime.datetime.now()
     down_map()
     print('end down_map')
