@@ -3,15 +3,17 @@
 # 测试不同并发下载算法的效率
 
 import datetime
-import multiprocessing
+import queue
 import re
-from multiprocessing import cpu_count, Pool
+import threading
+from collections import defaultdict
+from multiprocessing import cpu_count, Pool, Manager, Process
+from multiprocessing.pool import ThreadPool
+from threading import Thread
 
-import gevent
 # from gevent import monkey  # 从gevent库里导入monkey模块。
-
 # monkey.patch_all()  ##monkey.patch_all()能把程序变成协作式运行，就是可以帮助程序实现异步。
-
+# import gevent
 import requests
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -42,10 +44,6 @@ urls = ['http://www.zentao.net/links', 'http://www.mopaas.com/links', 'https://w
         'https://www.hojun.cn/links', 'https://afdian.net/links', 'https://blog.mayuko.cn/links',
         ]
 
-rootUrl = 'https://hexo.yuanjh.cn'
-suffix = '/links'
-maxCount = 50
-
 
 def process(url):
     try:
@@ -61,30 +59,60 @@ def process(url):
     return url, list()
 
 
-def down_map():
-    waitQueue = multiprocessing.Queue()
-    [waitQueue.put(url + suffix) for url in urls]
-    while waitQueue.qsize():
-        pool = Pool(processes=max(1, cpu_count() - 1))
-        results = pool.map(process, [waitQueue.get() for x in range(min(cpu_count() - 1, waitQueue.qsize()))])
-        print('len waitQueue:%s' % waitQueue.qsize())
+def down_thread_multi():
+    threads = list()
+    for url in urls:
+        threads.append(threading.Thread(target=process, args=url, ))
+    [t.start() for t in threads]
+    [t.join() for t in threads]
+    print([t.get() for t in threads])
 
 
-def down_apply_async():
-    waitQueue = multiprocessing.Queue()
-    [waitQueue.put(url + suffix) for url in urls]
-    while waitQueue.qsize():
-        pool = Pool(processes=max(1, cpu_count() - 1))
-        results_tmp = [pool.apply_async(process, (waitQueue.get(),)) for _ in
-                       range(min(cpu_count() - 1, waitQueue.qsize()))]
-        pool.close()
-        pool.join()
-        results = [x.get() for x in results_tmp]
-        print('len waitQueue:%s' % waitQueue.qsize())
+def down_thread_map():
+    pool = ThreadPool(max(1, cpu_count() - 1))
+    results = pool.map(process, urls)
+    print(results)
+    pool.close()
+    pool.join()
+
+
+def down_thread_async():
+    pool = ThreadPool(max(1, cpu_count() - 1))
+    results = list()
+    for url in urls:
+        results.append(pool.apply_async(process, args=(url,), kwds={}))
+    pool.close()
+    pool.join()
+    print(results)
+
+
+def down_process_multi():
+    processes = list()
+    for url in urls:
+        processes.append(Process(target=process, args=(url,)))
+    [t.start() for t in processes]
+    [t.join() for t in processes]
+    print([t.get() for t in processes])
+
+
+def down_process_map():
+    pool = Pool(processes=max(1, cpu_count() - 1))
+    results = pool.map(process, urls)
+    print(results)
+
+
+def down_process_async():
+    pool = Pool(processes=max(1, cpu_count() - 1))
+    results = list()
+    for url in urls:
+        results.append(pool.apply_async(process, (url,)))
+    pool.close()
+    pool.join()
+    print([result.get() for result in results])
 
 
 def down_gevent():
-    waitQueue = multiprocessing.Queue()
+    waitQueue = Manager().Queue()
     [waitQueue.put(url + suffix) for url in urls]
     while waitQueue.qsize():
         results_tmp = [gevent.spawn(process, waitQueue.get()) for _ in
@@ -94,22 +122,39 @@ def down_gevent():
         print('len waitQueue:%s' % waitQueue.qsize())
 
 
-time_map = dict()
+time_map = defaultdict(list)
 for _ in range(10):
-    t1 = datetime.datetime.now()
-    down_map()
-    print('end down_map')
-    t2 = datetime.datetime.now()
-    down_apply_async()
-    print('end down_apply_async')
-    t3 = datetime.datetime.now()
-    down_gevent()
-    print('end down_gevent')
-    t4 = datetime.datetime.now()
+    dt_start = datetime.datetime.now()
+    down_thread_multi()
+    print('end down_thread_multi')
+    dt_down_thread_multi = datetime.datetime.now()
 
-    time_map['map'] = time_map.get('map', list()) + [(t2 - t1).total_seconds()]
-    time_map['apply_async'] = time_map.get('apply_async', list()) + [(t3 - t2).total_seconds()]
-    time_map['down_gevent'] = time_map.get('down_gevent', list()) + [(t4 - t3).total_seconds()]
+    down_thread_map()
+    print('end down_thread_map')
+    dt_down_thread_map = datetime.datetime.now()
+
+    down_thread_async()
+    print('end down_thread_async')
+    dt_down_thread_async = datetime.datetime.now()
+
+    down_process_multi()
+    print('end down_process_multi')
+    dt_down_process_multi = datetime.datetime.now()
+
+    down_process_map()
+    print('end down_process_map')
+    dt_down_process_map = datetime.datetime.now()
+
+    down_process_async()
+    print('end down_process_async')
+    dt_down_process_async = datetime.datetime.now()
+
+    time_map['down_thread_multi'] = time_map.append((dt_down_thread_multi - dt_start).total_seconds())
+    time_map['down_thread_map'] = time_map.append((dt_down_thread_map - dt_down_thread_multi).total_seconds())
+    time_map['down_thread_async'] = time_map.append((dt_down_thread_async - dt_down_thread_map).total_seconds())
+    time_map['down_process_multi'] = time_map.append((dt_down_process_multi - dt_down_thread_async).total_seconds())
+    time_map['down_process_map'] = time_map.append((dt_down_process_map - dt_down_process_multi).total_seconds())
+    time_map['down_process_async'] =  time_map.append((dt_down_process_async - dt_down_process_map).total_seconds())
 
 time_df = pd.DataFrame(time_map)
 time_df.plot()
