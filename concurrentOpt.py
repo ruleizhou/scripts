@@ -120,7 +120,7 @@ def gevent():
 
 
 time_map = defaultdict(list)
-for _ in range(2):
+for _ in range(10):
     dt_start = datetime.datetime.now()
     thread_multi()
     print('end thread_multi')
