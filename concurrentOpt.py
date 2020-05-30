@@ -59,7 +59,7 @@ def process(url):
     return url, list()
 
 
-def down_thread_multi():
+def thread_multi():
     threads = list()
     for url in urls:
         threads.append(threading.Thread(target=process, args=(url,)))
@@ -67,7 +67,7 @@ def down_thread_multi():
     [t.join() for t in threads]
 
 
-def down_thread_map():
+def thread_map():
     pool = ThreadPool(max(1, cpu_count() - 1))
     results = pool.map(process, urls)
     pool.close()
@@ -75,7 +75,7 @@ def down_thread_map():
     print(results)
 
 
-def down_thread_async():
+def thread_async():
     pool = ThreadPool(max(1, cpu_count() - 1))
     results = list()
     for url in urls:
@@ -85,7 +85,7 @@ def down_thread_async():
     print([result.get() for result in results])
 
 
-def down_process_multi():
+def process_multi():
     processes = list()
     for url in urls:
         processes.append(Process(target=process, args=(url,)))
@@ -93,7 +93,7 @@ def down_process_multi():
     [t.join() for t in processes]
 
 
-def down_process_map():
+def process_map():
     pool = Pool(processes=max(1, cpu_count() - 1))
     results = pool.map(process, urls)
     pool.close()
@@ -101,7 +101,7 @@ def down_process_map():
     print(results)
 
 
-def down_process_async():
+def process_async():
     pool = Pool(processes=max(1, cpu_count() - 1))
     results = list()
     for url in urls:
@@ -111,7 +111,7 @@ def down_process_async():
     print([result.get() for result in results])
 
 
-def down_gevent():
+def gevent():
     waitQueue = Manager().Queue()
     [waitQueue.put(url + suffix) for url in urls]
     while waitQueue.qsize():
@@ -125,37 +125,39 @@ def down_gevent():
 time_map = defaultdict(list)
 for _ in range(2):
     dt_start = datetime.datetime.now()
-    down_thread_multi()
-    print('end down_thread_multi')
-    dt_down_thread_multi = datetime.datetime.now()
+    thread_multi()
+    print('end thread_multi')
+    dt_thread_multi = datetime.datetime.now()
 
-    down_thread_map()
-    print('end down_thread_map')
-    dt_down_thread_map = datetime.datetime.now()
+    thread_map()
+    print('end thread_map')
+    dt_thread_map = datetime.datetime.now()
 
-    down_thread_async()
-    print('end down_thread_async')
-    dt_down_thread_async = datetime.datetime.now()
+    thread_async()
+    print('end thread_async')
+    dt_thread_async = datetime.datetime.now()
 
-    down_process_multi()
-    print('end down_process_multi')
-    dt_down_process_multi = datetime.datetime.now()
+    process_multi()
+    print('end process_multi')
+    dt_process_multi = datetime.datetime.now()
 
-    down_process_map()
-    print('end down_process_map')
-    dt_down_process_map = datetime.datetime.now()
+    process_map()
+    print('end process_map')
+    dt_process_map = datetime.datetime.now()
 
-    down_process_async()
-    print('end down_process_async')
-    dt_down_process_async = datetime.datetime.now()
+    process_async()
+    print('end process_async')
+    dt_process_async = datetime.datetime.now()
 
-    time_map['down_thread_multi'].append((dt_down_thread_multi - dt_start).total_seconds())
-    time_map['down_thread_map'].append((dt_down_thread_map - dt_down_thread_multi).total_seconds())
-    time_map['down_thread_async'].append((dt_down_thread_async - dt_down_thread_map).total_seconds())
-    time_map['down_process_multi'].append((dt_down_process_multi - dt_down_thread_async).total_seconds())
-    time_map['down_process_map'].append((dt_down_process_map - dt_down_process_multi).total_seconds())
-    time_map['down_process_async'].append((dt_down_process_async - dt_down_process_map).total_seconds())
+    time_map['thread_multi'].append((dt_thread_multi - dt_start).total_seconds())
+    time_map['thread_map'].append((dt_thread_map - dt_thread_multi).total_seconds())
+    time_map['thread_async'].append((dt_thread_async - dt_thread_map).total_seconds())
+    time_map['process_multi'].append((dt_process_multi - dt_thread_async).total_seconds())
+    time_map['process_map'].append((dt_process_map - dt_process_multi).total_seconds())
+    time_map['process_async'].append((dt_process_async - dt_process_map).total_seconds())
 
 time_df = pd.DataFrame(time_map)
-time_df.plot()
+time_df[['thread_multi', 'thread_map', 'thread_async']].plot()
+plt.show()
+time_df[['process_multi', 'process_map', 'process_async']].plot()
 plt.show()
