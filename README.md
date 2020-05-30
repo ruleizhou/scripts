@@ -176,3 +176,6 @@ python validRtmp.py rtmp,rtsp https://www.optbbs.com/thread-3439203-1-1.html
 05，不考虑协程时，多线程较线程池速度更快，多进程较进程池速度更快，这一点不大符合理论，个人感觉和url数量少有关.  
 
 至于进程池在启用gevent后卡住的问题，网上也没查到相关的靠谱资料，哪位大牛晓得的话，求解释～  
+
+## 09,concurrent/threadShare.py  
+线程数据共享，测试代码  
