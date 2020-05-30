@@ -3,20 +3,17 @@
 # 测试不同并发下载算法的效率
 
 import datetime
-import queue
 import re
 import threading
 from collections import defaultdict
 from multiprocessing import cpu_count, Pool, Manager, Process
 from multiprocessing.pool import ThreadPool
-from threading import Thread
-
 # from gevent import monkey  # 从gevent库里导入monkey模块。
 # monkey.patch_all()  ##monkey.patch_all()能把程序变成协作式运行，就是可以帮助程序实现异步。
 # import gevent
-import requests
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
+import requests
 
 headers = {
     'Connection': 'keep-alive',
