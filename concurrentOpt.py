@@ -62,10 +62,9 @@ def process(url):
 def down_thread_multi():
     threads = list()
     for url in urls:
-        threads.append(threading.Thread(target=process, args=url, ))
+        threads.append(threading.Thread(target=process, args=(url, )))
     [t.start() for t in threads]
     [t.join() for t in threads]
-    print([t.get() for t in threads])
 
 
 def down_thread_map():
@@ -92,7 +91,6 @@ def down_process_multi():
         processes.append(Process(target=process, args=(url,)))
     [t.start() for t in processes]
     [t.join() for t in processes]
-    print([t.get() for t in processes])
 
 
 def down_process_map():
@@ -123,7 +121,7 @@ def down_gevent():
 
 
 time_map = defaultdict(list)
-for _ in range(10):
+for _ in range(2):
     dt_start = datetime.datetime.now()
     down_thread_multi()
     print('end down_thread_multi')
