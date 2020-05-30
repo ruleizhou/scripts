@@ -62,7 +62,7 @@ def process(url):
 def down_thread_multi():
     threads = list()
     for url in urls:
-        threads.append(threading.Thread(target=process, args=(url, )))
+        threads.append(threading.Thread(target=process, args=(url,)))
     [t.start() for t in threads]
     [t.join() for t in threads]
 
@@ -79,10 +79,10 @@ def down_thread_async():
     pool = ThreadPool(max(1, cpu_count() - 1))
     results = list()
     for url in urls:
-        results.append(pool.apply_async(process, args=(url,), kwds={}))
+        results.append(pool.apply_async(process, args=(url,)))
     pool.close()
     pool.join()
-    print(results)
+    print([result.get() for result in results])
 
 
 def down_process_multi():
@@ -149,12 +149,12 @@ for _ in range(2):
     print('end down_process_async')
     dt_down_process_async = datetime.datetime.now()
 
-    time_map['down_thread_multi'] = time_map.append((dt_down_thread_multi - dt_start).total_seconds())
-    time_map['down_thread_map'] = time_map.append((dt_down_thread_map - dt_down_thread_multi).total_seconds())
-    time_map['down_thread_async'] = time_map.append((dt_down_thread_async - dt_down_thread_map).total_seconds())
-    time_map['down_process_multi'] = time_map.append((dt_down_process_multi - dt_down_thread_async).total_seconds())
-    time_map['down_process_map'] = time_map.append((dt_down_process_map - dt_down_process_multi).total_seconds())
-    time_map['down_process_async'] =  time_map.append((dt_down_process_async - dt_down_process_map).total_seconds())
+    time_map['down_thread_multi'].append((dt_down_thread_multi - dt_start).total_seconds())
+    time_map['down_thread_map'].append((dt_down_thread_map - dt_down_thread_multi).total_seconds())
+    time_map['down_thread_async'].append((dt_down_thread_async - dt_down_thread_map).total_seconds())
+    time_map['down_process_multi'].append((dt_down_process_multi - dt_down_thread_async).total_seconds())
+    time_map['down_process_map'].append((dt_down_process_map - dt_down_process_multi).total_seconds())
+    time_map['down_process_async'].append((dt_down_process_async - dt_down_process_map).total_seconds())
 
 time_df = pd.DataFrame(time_map)
 time_df.plot()
