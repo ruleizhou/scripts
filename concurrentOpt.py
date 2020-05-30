@@ -70,9 +70,9 @@ def down_thread_multi():
 def down_thread_map():
     pool = ThreadPool(max(1, cpu_count() - 1))
     results = pool.map(process, urls)
-    print(results)
     pool.close()
     pool.join()
+    print(results)
 
 
 def down_thread_async():
@@ -96,6 +96,8 @@ def down_process_multi():
 def down_process_map():
     pool = Pool(processes=max(1, cpu_count() - 1))
     results = pool.map(process, urls)
+    pool.close()
+    pool.join()
     print(results)
 
 
