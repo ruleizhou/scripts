@@ -158,6 +158,7 @@ for _ in range(2):
     time_map['gevent_test'].append((dt_gevent_test - dt_process_async).total_seconds())
 
 time_df = pd.DataFrame(time_map)
+time_df.to_csv('data/concurrentOptGevent_time_df.csv')
 time_df[['thread_multi', 'thread_map', 'thread_async', 'gevent_test']].plot()
 plt.show()
 time_df[['process_multi', 'process_map', 'process_async']].plot()

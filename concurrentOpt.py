@@ -154,6 +154,7 @@ for _ in range(2):
     time_map['process_async'].append((dt_process_async - dt_process_map).total_seconds())
 
 time_df = pd.DataFrame(time_map)
+time_df.to_csv('data/concurrentOpt_time_df.csv')
 time_df[['thread_multi', 'thread_map', 'thread_async']].plot()
 plt.show()
 time_df[['process_multi', 'process_map', 'process_async']].plot()
