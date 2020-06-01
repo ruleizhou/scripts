@@ -1,5 +1,6 @@
 # coding=utf-8
 # get last frame
+import sys
 from enum import unique, Enum
 from multiprocessing import Queue, Process, Value, Array, Manager
 
@@ -93,7 +94,12 @@ class RtmpPlayer(object):
         return self.frame_queue.get()
 
 
-rtmp_url = 'rtmp://58.200.131.2:1935/livetv/hunantv'
+# rtmp_url = 'rtmp://58.200.131.2:1935/livetv/hunantv'
+
+
+print('params:' + str(sys.argv[1:]))
+rtmp_url = sys.argv[1]
+
 cap = RtmpPlayer(rtmp_url)
 cap.run_status = RunStatus.START
 

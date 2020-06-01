@@ -179,3 +179,12 @@ python validRtmp.py rtmp,rtsp https://www.optbbs.com/thread-3439203-1-1.html
 
 ## 09,concurrent/threadShare.py  
 线程数据共享，测试代码  
+
+## 10,video/RtmpPlayer.py
+env:py35(opencv)  
+简易rtmpPlayer播放器  
+使用方法:python RtmpPlayer.py rtmp://58.200.131.2:1935/livetv/hunantv(湖南卫视的rtmp地址)  
+控制逻辑:   
+p:暂停  
+c:继续  
+f:完成(结束)  
