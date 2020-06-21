@@ -100,10 +100,10 @@ class MdArticle(object):
                                 self.date = lines[i][6:].strip()
                             elif lines[i].startswith('categories: '):
                                 self.categories = lines[i][12:].strip()
-                            elif lines[i].startswith('tags: '):
-                                self.tags = lines[i][5:].strip()
                             elif lines[i].startswith('keywords: '):
                                 self.keywords = lines[i][9:].strip()
+                            elif lines[i].startswith('tags: '):
+                                self.tags = lines[i][5:].strip()
                             elif lines[i].startswith('abbrlink: '):
                                 self.abbrlink = lines[i][10:].strip()
                         else:
