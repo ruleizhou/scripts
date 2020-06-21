@@ -62,7 +62,7 @@ def getFileCategories(fullFilePath):
     return filter(lambda x: x != '.' and x != '/' and x != '', fullFilePath.split('/')[:-1])
 
 
-def getFileTags(title):
+def getFileKeywords(title):
     title = re.sub(r'\[.*?\]', r'', title).replace('_', ',')  # 去除[]中的东西
     title = re.sub(r'\d+', r'', title)
     params = '{"Num":10,"Text":"%s"}' % title
@@ -83,6 +83,7 @@ class MdArticle(object):
         self.date = ''
         self.categories = ''
         self.tags = ''
+        self.keywords=''
         self.abbrlink = ''
         self.data = []
         if self.fullFilePath.strip():
@@ -101,6 +102,8 @@ class MdArticle(object):
                                 self.categories = lines[i][12:].strip()
                             elif lines[i].startswith('tags: '):
                                 self.tags = lines[i][5:].strip()
+                            elif lines[i].startswith('keywords: '):
+                                self.keywords = lines[i][9:].strip()
                             elif lines[i].startswith('abbrlink: '):
                                 self.abbrlink = lines[i][10:].strip()
                         else:
@@ -123,8 +126,12 @@ class MdArticle(object):
         if not self.date:
             self.date = getFileDatetime(self.fullFilePath)
         self.categories = str(list(getFileCategories(self.fullFilePath)))
+        if len(self.keywords) <= 0:
+            self.keywords = ','.join(getFileKeywords(title=filePath.replace('/', ',') + ',' + self.title))
+
         if len(self.tags) <= 2:  # str形式list,至少含有[]2个字符
-            self.tags = str(getFileTags(title=filePath.replace('/', ',') + ',' + self.title))
+            self.tags = '['+self.keywords+']'
+
         if len(self.abbrlink.strip()) == 0:
             self.abbrlink = str(getFileAbbr(self.title))
         abbrMap[self.abbrlink] = abbrMap.get(self.abbrlink, list()) + [fileName]
@@ -140,8 +147,8 @@ class MdArticle(object):
         filePrefixLines.append('date: %s  \n' % self.date)
         # 文件相对路径，填充categories
         filePrefixLines.append('categories: %s  \n' % str(self.categories))
+        filePrefixLines.append('keywords: %s  \n' % str(self.keywords))
         filePrefixLines.append('tags: %s  \n' % str(self.tags))
-        filePrefixLines.append('keywords: %s  \n' % str(self.tags).replace('[', '').replace(']', '').replace("'", ''))
         # 收尾
         filePrefixLines.append('toc: true  \n')
         filePrefixLines.append('abbrlink: %s  \n' % self.abbrlink)
