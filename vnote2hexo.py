@@ -10,15 +10,23 @@
 import os, sys, re
 import shutil
 import subprocess
+from collections import defaultdict, Counter
 
 
-def getImgs(file_path):
+def getImgsAndTags(file_path):
+    imgs = list()
+    tags = list()
     with open(file_path, 'r') as f:
-        content = ''.join(f.readlines())
-        findAll = re.findall(r"([\d_]+\.(png|jpg|jpeg|gif))", content, re.I | re.S | re.M)
-        if findAll:
-            return [k for k, v in findAll]
-    return list()
+        lines = f.readlines()
+        tags = lines[5].strip().replace('tags: ','').replace('[', '').replace(']', '').replace('\'', '').replace('\"', '').split(
+            ',')
+
+        content = ''.join(lines[9:])
+        findAllImgs = re.findall(r"([\d_]+\.(png|jpg|jpeg|gif))", content, re.I | re.S | re.M)
+        if findAllImgs:
+            imgs = [k for k, v in findAllImgs]
+
+    return imgs, tags
 
 
 # 添加水印
@@ -52,13 +60,14 @@ hexo_md_paths = list()
 lost_imgs = list()
 new_imgs = list()
 hexo_exist_imgs = set(os.listdir(hexo_img_dir))
+pathTagsMap = defaultdict(list)
 for dirpath, dirnames, filenames in os.walk(vnote_dir):
     if dirpath.find('_v_recycle_bin') > -1:
         continue
     for name in filenames:
         if re.search(filter_reg, name, re.M | re.I):
             # 采集文中图片
-            img_names = [img_name for img_name in getImgs(dirpath + '/' + name)]
+            img_names,tags = getImgsAndTags(dirpath + '/' + name)
             # 文章copy到文章文件夹
             shutil.copy(dirpath + '/' + name, hexo_md_dir)
             # 图片copy到图片文件夹
@@ -86,6 +95,18 @@ for dirpath, dirnames, filenames in os.walk(vnote_dir):
                 f.truncate()
                 f.seek(0)
                 f.write(content)
+
+            # 收集各路径下的tags
+            pathTagsMap[dirpath].extend(tags)
+# for key,value in pathTagsMap.items():
+#     pathTagsMap[key]=Counter(value)
+# print('标签信息')
+# import pandas as pd
+# tagDf=pd.DataFrame(columns=['path1','path2','tags'])
+# for key,count_map in pathTagsMap.items():
+#     keys=key.split('/')
+#     tagDf.loc[tagDf.shape[0]]=[keys[1],keys[2],','.join(['%s(%s)'%(tag,value) for tag,value in count_map.items()])]
+
 print('hexo_md_paths:\n%s \n %d' % ('\n'.join(hexo_md_paths), len(hexo_md_paths)))
 print('hexo_img_new:\n%s \n %d' % ('\n'.join(new_imgs), len(new_imgs)))
 print('hexo_img_lost:\n%s \n %d' % ('\n'.join(lost_imgs), len(lost_imgs)))
