@@ -98,15 +98,17 @@ for dirpath, dirnames, filenames in os.walk(vnote_dir):
 
             # 收集各路径下的tags
             pathTagsMap[dirpath].extend(tags)
-# for key,value in pathTagsMap.items():
-#     pathTagsMap[key]=Counter(value)
-# print('标签信息')
-# import pandas as pd
-# tagDf=pd.DataFrame(columns=['path1','path2','tags'])
-# for key,count_map in pathTagsMap.items():
-#     keys=key.split('/')
-#     tagDf.loc[tagDf.shape[0]]=[keys[1],keys[2],','.join(['%s(%s)'%(tag,value) for tag,value in count_map.items()])]
+for key,value in pathTagsMap.items():
+    pathTagsMap[key]=Counter(value)
+print('标签信息')
+import pandas as pd
+tagDf=pd.DataFrame(columns=['path1','path2','tags'])
+for key,count_map in pathTagsMap.items():
+    keys=key.split('/')
+    tagDf.loc[tagDf.shape[0]]=[keys[1],keys[2],','.join(['<a href="/tags/%s" >%s(%s)</a>'%(tag,tag,value) for tag,value in count_map.items()])]
 
 print('hexo_md_paths:\n%s \n %d' % ('\n'.join(hexo_md_paths), len(hexo_md_paths)))
 print('hexo_img_new:\n%s \n %d' % ('\n'.join(new_imgs), len(new_imgs)))
 print('hexo_img_lost:\n%s \n %d' % ('\n'.join(lost_imgs), len(lost_imgs)))
+print('records')
+print(tagDf.to_dict('records'))
