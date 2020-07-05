@@ -13,13 +13,14 @@ import subprocess
 from collections import defaultdict, Counter
 import pandas as pd
 
+
 def getImgsAndTags(file_path):
     imgs = list()
     tags = list()
     with open(file_path, 'r') as f:
         lines = f.readlines()
         tags = lines[5].strip().replace('tags: ', '').replace('[', '') \
-            .replace(']', '').replace('\'', '').replace('\"', '').split(',')
+            .replace(']', '').replace('\'', '').replace('\"', '').replace(' ', '').split(',')
 
         content = ''.join(lines[9:])
         findAllImgs = re.findall(r"([\d_]+\.(png|jpg|jpeg|gif))", content, re.I | re.S | re.M)
@@ -61,6 +62,9 @@ lost_imgs = list()
 new_imgs = list()
 hexo_exist_imgs = set(os.listdir(hexo_img_dir))
 pathTagsMap = defaultdict(list)
+
+
+
 for dirpath, dirnames, filenames in os.walk(vnote_dir):
     if dirpath.find('_v_recycle_bin') > -1:
         continue
@@ -97,16 +101,17 @@ for dirpath, dirnames, filenames in os.walk(vnote_dir):
                 f.write(content)
 
             # 收集各路径下的tags
-            pathTagsMap[dirpath].extend(tags)
-for key,value in pathTagsMap.items():
-    pathTagsMap[key]=Counter(value)
+            key = ','.join(dirpath.replace(vnote_dir, '').split('/')[:2])
+            pathTagsMap[key].extend(tags)
+for key, value in pathTagsMap.items():
+    pathTagsMap[key] = Counter(value)
 print('标签信息')
-import pandas as pd
-tagDf=pd.DataFrame(columns=['path1','path2','tags'])
-for key,count_map in pathTagsMap.items():
-    keys=key.split('/')
-    tagDf.loc[tagDf.shape[0]]=[keys[1],keys[2],','.join(['<a href="/tags/%s" >%s(%s)</a>'%(tag,tag,value) for tag,value in count_map.items()])]
-
+tagDf = pd.DataFrame(columns=['path1', 'path2', 'tags'])
+for key, count_map in pathTagsMap.items():
+    keys = key.split(',')
+    tagDf.loc[tagDf.shape[0]] = [keys[0], keys[1] if keys[1:] else '', ','.join(
+        ['<a href="/tags/%s" >%s(%s)</a>' % (tag, tag, value) for tag, value in count_map.items()])]
+tagDf = tagDf.sort_values(['path1', 'path2'])
 print('hexo_md_paths:\n%s \n %d' % ('\n'.join(hexo_md_paths), len(hexo_md_paths)))
 print('hexo_img_new:\n%s \n %d' % ('\n'.join(new_imgs), len(new_imgs)))
 print('hexo_img_lost:\n%s \n %d' % ('\n'.join(lost_imgs), len(lost_imgs)))
