@@ -19,8 +19,9 @@ def getImgsAndTags(file_path):
     tags = list()
     with open(file_path, 'r') as f:
         lines = f.readlines()
-        tags = lines[5].strip().replace('tags: ', '').replace('[', '') \
-            .replace(']', '').replace('\'', '').replace('\"', '').replace(' ', '').split(',')
+        head=''.join(lines[:9])
+        tagsStr = re.findall(r"tags: \[(.*?)\]", head, re.I | re.S | re.M)[0]
+        tags = tagsStr.replace('\'', '').replace('\"', '').replace(' ', '').split(',')
 
         content = ''.join(lines[9:])
         findAllImgs = re.findall(r"([\d_]+\.(png|jpg|jpeg|gif))", content, re.I | re.S | re.M)
@@ -39,7 +40,7 @@ def waterMark(file_path, water_path):
     subprocess.call(ffmpeg_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
-# vnote_dir = '/home/john/文档/vnote_notebooks/vnote'
+# vnote_dir = '/home/john/文档/vnote_notebooks/vnote/'
 # hexo_source_dir = '/home/john/my_hexo/source'
 # filter_reg = '\[博\].*\.md'
 # water_path = '/home/john/my_hexo/source/images_out/water.png'
@@ -69,7 +70,7 @@ for dirpath, dirnames, filenames in os.walk(vnote_dir):
     if dirpath.find('_v_recycle_bin') > -1:
         continue
     for name in filenames:
-        if re.search(filter_reg, name, re.M | re.I):
+        if name.endswith('md') and re.search(filter_reg, name, re.M | re.I):
             # 采集文中图片
             img_names, tags = getImgsAndTags(dirpath + '/' + name)
             # 文章copy到文章文件夹
