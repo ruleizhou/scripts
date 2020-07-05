@@ -11,7 +11,7 @@ import os, sys, re
 import shutil
 import subprocess
 from collections import defaultdict, Counter
-
+import pandas as pd
 
 def getImgsAndTags(file_path):
     imgs = list()
