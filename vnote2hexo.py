@@ -18,8 +18,8 @@ def getImgsAndTags(file_path):
     tags = list()
     with open(file_path, 'r') as f:
         lines = f.readlines()
-        tags = lines[5].strip().replace('tags: ','').replace('[', '').replace(']', '').replace('\'', '').replace('\"', '').split(
-            ',')
+        tags = lines[5].strip().replace('tags: ', '').replace('[', '') \
+            .replace(']', '').replace('\'', '').replace('\"', '').split(',')
 
         content = ''.join(lines[9:])
         findAllImgs = re.findall(r"([\d_]+\.(png|jpg|jpeg|gif))", content, re.I | re.S | re.M)
@@ -67,7 +67,7 @@ for dirpath, dirnames, filenames in os.walk(vnote_dir):
     for name in filenames:
         if re.search(filter_reg, name, re.M | re.I):
             # 采集文中图片
-            img_names,tags = getImgsAndTags(dirpath + '/' + name)
+            img_names, tags = getImgsAndTags(dirpath + '/' + name)
             # 文章copy到文章文件夹
             shutil.copy(dirpath + '/' + name, hexo_md_dir)
             # 图片copy到图片文件夹
