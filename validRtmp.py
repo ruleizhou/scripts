@@ -7,14 +7,16 @@
 # 1,下载页面：https://www.optbbs.com/thread-3439203-1-1.html（避免使用csdn等，需点击触发显示全部的网页）
 # 2,正则匹配：rtmp://, rtsp://等地址
 # 3,[rtmp;//xx.com,rtsp://yy.com]使用ping+cv2.read()验证有效性
-
+import argparse
 import datetime
 import re
 import sys
 from multiprocessing import cpu_count, Pool
 import cv2
 import requests
-
+from contextlib import suppress
+import logging
+logger=logging.getLogger()
 headers = {
     'Connection': 'keep-alive',
     'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -29,45 +31,43 @@ headers = {
 }
 
 
-def process(url):
-    try:
+def process(url: str):
+    with suppress(Exception):
         response = requests.get(url, headers=headers, timeout=(3, 7))
-        if not response.ok:
-            return None, list()
         content = response.text.replace(" ", "")
         res_url = r"((rtmp://[^'\"\?><]+)|(rtsp://[^'\"\?><]+))"
         urls = re.findall(res_url, content, re.I | re.S | re.M)
         return [x[0] for x in urls]
-    except Exception as e:
-        pass
     return list()
 
 
-def validUrl(url):
-    try:
+def validUrl(url: str):
+    with suppress(Exception):
         cap = cv2.VideoCapture(url)
         ret, frame = cap.read()
         if ret:
             return url
-    except:
-        pass
     return ''
 
 
-# formatStr = 'rtmp,rtsp'
-# webpageUrl = 'https://www.optbbs.com/thread-3439203-1-1.html'
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-u', '--url', help='url address')
 
-formatStr = str(sys.argv[1])
-webpageUrl = sys.argv[2]
-print('params:' + str(sys.argv[1:]))
-waitUrls = process(webpageUrl)
-print('waitUrls len:%s' % len(waitUrls))
-validUrls = list()
+    # formatStr = 'rtmp,rtsp'
+    # webpageUrl = 'https://www.optbbs.com/thread-3439203-1-1.html'
 
-pool = Pool(processes=max(1, cpu_count() - 1))
-validUrls = pool.map(validUrl, waitUrls)
-pool.close()
-pool.join()
-validUrls = [x for x in set(validUrls) if x]
+    args = parser.parse_args()
+    args_url = args.url
 
-print('validUrls: len %s \n %s' % (len(validUrls), str(validUrls)))
+    waitUrls = process(args_url)
+    logger.info('waitUrls len:%d' % len(waitUrls))
+    validUrls = list()
+
+    pool = Pool(processes=max(1, cpu_count() - 1))
+    validUrls = pool.map(validUrl, waitUrls)
+    pool.close()
+    pool.join()
+    validUrls = [x for x in set(validUrls) if x]
+
+    logger.info('validUrls: len %d \n %s' % (len(validUrls), validUrls))
