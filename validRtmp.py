@@ -4,7 +4,7 @@
 # 寻找过滤有效的rtmp,or,rtsp直播地址
 # python xx.py rtmp,rtsp https://www.optbbs.com/thread-3439203-1-1.html
 # 步骤
-# 1,下载页面：https://www.optbbs.com/thread-3439203-1-1.html（避免使用csdn等，需点击触发显示全部的网页）
+# 1,下载页面：https://blog.csdn.net/tengkonglieying/article/details/106093350（避免使用csdn等，需点击触发显示全部的网页）
 # 2,正则匹配：rtmp://, rtsp://等地址
 # 3,[rtmp;//xx.com,rtsp://yy.com]使用ping+cv2.read()验证有效性
 import argparse
@@ -53,9 +53,6 @@ def validUrl(url: str):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-u', '--url', help='url address')
-
-    # formatStr = 'rtmp,rtsp'
-    # webpageUrl = 'https://www.optbbs.com/thread-3439203-1-1.html'
 
     args = parser.parse_args()
     args_url = args.url
