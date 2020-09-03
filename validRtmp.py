@@ -8,14 +8,14 @@
 # 2,正则匹配：rtmp://, rtsp://等地址
 # 3,[rtmp;//xx.com,rtsp://yy.com]使用ping+cv2.read()验证有效性
 import argparse
-import datetime
+import logging
 import re
-import sys
+from contextlib import suppress
 from multiprocessing import cpu_count, Pool
+
 import cv2
 import requests
-from contextlib import suppress
-import logging
+
 logger=logging.getLogger()
 headers = {
     'Connection': 'keep-alive',
