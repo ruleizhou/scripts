@@ -12,13 +12,10 @@
 # => handleSet=[http://xxx.yy.com/links,https://zz.ff.cn/links]
 #    waitSet=[页面拥有子链接（根域名形式）,页面拥有子链接（根域名形式）,,,]
 # => 循环此步骤
-
+import argparse
 import datetime
 import re
-import sys
 from multiprocessing import cpu_count, Pool, Queue
-
-import gevent
 import requests
 
 headers = {
@@ -33,19 +30,6 @@ headers = {
     'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7,tr;q=0.6,fr;q=0.5,zh-TW;q=0.4',
     'Cookie': 'BIDUPSID=8C26E1690527F4CB4ED508565EBE810E; PSTM=1586487982; BAIDUID=8C26E1690527F4CBE9EBFA9A228B6F9B:FG=1; BD_HOME=1; H_PS_PSSID=30971_1422_21088_30839_31186_31217_30823_31163; BD_UPN=123353'
 }
-
-rootUrl = 'https://hexo.yuanjh.cn'
-suffix = '/links'
-maxCount = 100
-maxDepth = 10
-
-
-# rootUrl = sys.argv[1]
-# suffix = sys.argv[2]
-# maxCount = int(sys.argv[3])
-# maxDepth = int(sys.argv[4])
-#
-# print('params:' + str(sys.argv[1:]))
 
 
 def process(url):
@@ -62,44 +46,55 @@ def process(url):
     return url, list()
 
 
-startTime = datetime.datetime.now()
-print('all start:' + str(startTime))
-
-# 满足这个pattern的认为是本站文章
-waitQueue = Queue()
-waitQueue.put(rootUrl + suffix)
-waitQueueSet = set(rootUrl + suffix)
-successSet = set()
-faultSet = set()
-
-results_tmp = list()
-results = list()
-firstPageSet = set()
-
-
 def handle_data(result):
-    global waitQueueSet
+    global wait_queue_set
     url, urls = result
     if len(urls) > 0:
-        successSet.add(url)
+        success_set.add(url)
     else:
-        faultSet.add(url)
+        fault_set.add(url)
 
-    addWaitQueueSet = set([url + suffix for url in urls])
-    [waitQueue.put(url) for url in (addWaitQueueSet - waitQueueSet)]
-    waitQueueSet = waitQueueSet.union(addWaitQueueSet)
+    add_wait_queue_set = set([url + suffix for url in urls])
+    [wait_queue.put(url) for url in (add_wait_queue_set - wait_queue_set)]
+    wait_queue_set = wait_queue_set.union(add_wait_queue_set)
 
 
-while len(successSet) < maxCount and waitQueue.qsize():
-    # 挪外面最好，但未有合适处理方案（close无法open）
-    pool = Pool(processes=max(1, cpu_count() - 1))
-    results_tmp = [pool.apply_async(process, (waitQueue.get(),), callback=handle_data) for _ in
-                   range(min(cpu_count() - 1, waitQueue.qsize()))]
-    pool.close()
-    pool.join()
-    print('waitSet len:%s successSet:%s faultSet:%s' % (waitQueue.qsize(), len(successSet), len(faultSet)))
-print('successSet:%s faultSet:%s' % (len(successSet), len(faultSet)))
-print('successSet minus firstPageSet:%s' % list(successSet - firstPageSet))
-endTime = datetime.datetime.now()
-print('all end:' + str(endTime))
-print('spend seconds:%s' % (endTime - startTime).total_seconds())
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--seed_url', type=str, help='seed url address')
+    parser.add_argument('-suf', '--suffix', type=str, help='suffix')
+    parser.add_argument('-maxc', '--max_count', type=int, default=100, help='max count of url')
+    parser.add_argument('-maxd', '--max_depth', type=int, default=10, help='max depth of url')
+
+    args = parser.parse_args()
+    root_url = args.seed_url
+    suffix = args.suffix
+    max_count = args.max_count
+    max_depth = args.max_depth
+
+    start_time = datetime.datetime.now()
+    print('all start:' + str(start_time))
+
+    # 满足这个pattern的认为是本站文章
+    wait_queue = Queue()
+    wait_queue.put(root_url + suffix)
+    wait_queue_set = set(root_url + suffix)
+    success_set = set()
+    fault_set = set()
+
+    results_tmp = list()
+    results = list()
+    first_page_set = set()
+
+    while len(success_set) < max_count and wait_queue.qsize():
+        # 挪外面最好，但未有合适处理方案（close无法open）
+        pool = Pool(processes=max(1, cpu_count() - 1))
+        results_tmp = [pool.apply_async(process, (wait_queue.get(),), callback=handle_data) for _ in range(min(cpu_count() - 1, wait_queue.qsize()))]
+        pool.close()
+        pool.join()
+        print('wait_set len:%s success_set:%s fault_set:%s' % (wait_queue.qsize(), len(success_set), len(fault_set)))
+    print('successSet:%s fault_set:%s' % (len(success_set), len(fault_set)))
+    print('successSet minus first_page_set:%s' % list(success_set - first_page_set))
+    endTime = datetime.datetime.now()
+    print('all end:' + str(endTime))
+    print('spend seconds:%s' % (endTime - start_time).total_seconds())
