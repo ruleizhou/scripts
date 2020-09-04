@@ -10,6 +10,7 @@
 # 3,all_df.rename()
 # 4,all_df.to_csv(index=False)
 import argparse
+import json
 import os
 import sys
 from contextlib import suppress
@@ -49,11 +50,11 @@ def pkl2csv(file_path_pkl: str, rename_map: Dict[str, str] = None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file_path', type=str, help='pkl file path')
-    parser.add_argument('-m', '--rename_map', type=dict, action="store", help='rename dataframe column ')
+    parser.add_argument('-m', '--rename_map', type=str, help='rename dataframe column')
 
     # file_path_pkl = '/home/john/下载/dd_price_vp_20200809_20200818.pkl'
     # rename_map = {'index': 'datetime', 'volume': 'vol'}
 
     args = parser.parse_args()
-    rename_map = eval(str(args.rename_map))
+    rename_map = json.loads(args.rename_map)
     pkl2csv(args.file_path, rename_map)
