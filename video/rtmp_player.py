@@ -1,5 +1,6 @@
 # coding=utf-8
 # get last frame
+import argparse
 import sys
 from enum import unique, Enum
 from multiprocessing import Queue, Process, Value, Array, Manager
@@ -96,26 +97,28 @@ class RtmpPlayer(object):
 
 # rtmp_url = 'rtmp://58.200.131.2:1935/livetv/hunantv'
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser('simple rtsp play(f:finish p:pause c:continue)')
+    parser.add_argument('-u', '--url', type=str, help='url address of rtsp')
+    args = parser.parse_args()
+    rtmp_url = args.url
 
-print('params:' + str(sys.argv[1:]))
-rtmp_url = sys.argv[1]
+    cap = RtmpPlayer(rtmp_url)
+    cap.run_status = RunStatus.START
 
-cap = RtmpPlayer(rtmp_url)
-cap.run_status = RunStatus.START
-
-frame = cap.read()
-while cap.run_status != RunStatus.FINISH:
-    if frame is not None:
-        cv2.imshow(rtmp_url, frame)
-    k = cv2.waitKey(1)
-    if k == 27:
-        break
-    elif k & 0xFF == ord('p'):
-        cap.run_status = RunStatus.PAUSE
-    elif k & 0xFF == ord('c'):
-        cap.run_status = RunStatus.CONTINUE
-    elif k & 0xFF == ord('f'):
-        cap.run_status = RunStatus.FINISH
-    print('frame_queue:%s' % (cap.frame_queue.qsize()))
-    frame = cap.last_frame_nowait()
-print('end all')
+    frame = cap.read()
+    while cap.run_status != RunStatus.FINISH:
+        if frame is not None:
+            cv2.imshow(rtmp_url, frame)
+        k = cv2.waitKey(1)
+        if k == 27:
+            break
+        elif k & 0xFF == ord('p'):
+            cap.run_status = RunStatus.PAUSE
+        elif k & 0xFF == ord('c'):
+            cap.run_status = RunStatus.CONTINUE
+        elif k & 0xFF == ord('f'):
+            cap.run_status = RunStatus.FINISH
+        print('frame_queue:%s' % (cap.frame_queue.qsize()))
+        frame = cap.last_frame_nowait()
+    print('end all')
