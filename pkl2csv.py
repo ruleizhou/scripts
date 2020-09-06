@@ -2,8 +2,7 @@
 # 基于conda env:vnpy19(含有pandas即可)
 
 # 将pkl转为csv格式(方便直接导入数据库等）
-# python xx.py pklPath raname_map
-# python pkl2csv.py ~/下载/dd_price_vp_20190601_20200421.pkl '{"index":"datetime","minor_xs":"code","volume":"vol"}'
+# python pkl2csv.py -f '/home/john/下载/dd_price_vp_20200809_20200818.pkl' -m '{"index": "datetime", "volume": "vol"}'
 # 步骤
 # 1,依次取得pkl文件minor_xs轴维度 as df
 # 2,df.reset_index(),df.dropna(),df拼接为all_df
@@ -19,6 +18,7 @@ from typing import Dict
 import pandas as pd
 import logging
 logger = logging.getLogger()
+
 
 # 获取文件路径、文件名、后缀
 def file_path_split(filename: str):
@@ -51,9 +51,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file_path', type=str, help='pkl file path')
     parser.add_argument('-m', '--rename_map', type=str, help='rename dataframe column')
-
-    # file_path_pkl = '/home/john/下载/dd_price_vp_20200809_20200818.pkl'
-    # rename_map = {'index': 'datetime', 'volume': 'vol'}
 
     args = parser.parse_args()
     rename_map = json.loads(args.rename_map)

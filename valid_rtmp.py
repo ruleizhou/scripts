@@ -2,7 +2,7 @@
 # 基于conda env:py35(opencv)
 
 # 寻找过滤有效的rtmp,or,rtsp直播地址
-# python xx.py rtmp,rtsp https://www.optbbs.com/thread-3439203-1-1.html
+# python valid_rtmp.py -u https://blog.csdn.net/osle123/article/details/52757886
 # 步骤
 # 1,下载页面：https://blog.csdn.net/osle123/article/details/52757886（避免使用csdn等，需点击触发显示全部的网页）
 # 2,正则匹配：rtmp://, rtsp://等地址

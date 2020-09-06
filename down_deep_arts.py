@@ -2,8 +2,7 @@
 # 环境:py35(gevent)
 
 # 递归采集友情链接
-# python xx.py rootUrl suffix maxCount
-# python xx.py 'https://hexo.yuanjh.cn' '/links' 100
+# python down_deep_arts.py -s 'https://hexo.yuanjh.cn' -suf '/links'
 # 步骤
 # 1,https://hexo.yuanjh.cn => https://hexo.yuanjh.cn/links
 # 2,https://hexo.yuanjh.cn/links => [http://xxx.yy.com,https://zz.ff.cn]
@@ -16,6 +15,8 @@ import argparse
 import datetime
 import re
 from multiprocessing import cpu_count, Pool, Queue
+from typing import List, Tuple
+
 import requests
 
 headers = {
@@ -32,7 +33,7 @@ headers = {
 }
 
 
-def process(url):
+def process(url: str):
     try:
         response = requests.get(url, headers=headers, timeout=(3, 7))
         if not response.ok:
@@ -46,7 +47,7 @@ def process(url):
     return url, list()
 
 
-def handle_data(result):
+def handle_data(result: Tuple[str, List[str]]):
     global wait_queue_set
     url, urls = result
     if len(urls) > 0:
