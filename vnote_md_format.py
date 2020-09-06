@@ -18,7 +18,7 @@
 # 用法 python vnote_md_format.py ./目录1/目录2/文件.md(x)
 #   生成文件的前缀，此时文件的cate=目录1,目录2
 # 用法 python vnote_md_format.py 文件.md
-
+import argparse
 import io
 import os
 import re
@@ -54,15 +54,15 @@ def TimeStampToTime(timestamp):
     return time.strftime('%Y-%m-%d %H:%M:%S', timeStruct)
 
 
-def getFileDatetime(fullFilePath):
+def getFileDatetime(fullFilePath: str):
     return TimeStampToTime(os.path.getctime(fullFilePath))
 
 
-def getFileCategories(fullFilePath):
+def getFileCategories(fullFilePath: str):
     return filter(lambda x: x != '.' and x != '/' and x != '', fullFilePath.split('/')[:-1])
 
 
-def getFileKeywords(title):
+def getFileKeywords(title: str):
     title = re.sub(r'\[.*?\]', r'', title).replace('_', ',')  # 去除[]中的东西
     title = re.sub(r'\d+', r'', title)
     params = '{"Num":10,"Text":"%s"}' % title
@@ -71,7 +71,7 @@ def getFileKeywords(title):
     return [item.Word for item in resp.Keywords]
 
 
-def getFileAbbr(title):
+def getFileAbbr(title: str):
     return hashlib.md5(title.encode('utf-8')).hexdigest()[-8:]
 
 
@@ -83,7 +83,7 @@ class MdArticle(object):
         self.date = ''
         self.categories = ''
         self.tags = ''
-        self.keywords=''
+        self.keywords = ''
         self.abbrlink = ''
         self.data = []
         if self.fullFilePath.strip():
@@ -130,7 +130,7 @@ class MdArticle(object):
             self.keywords = ','.join(getFileKeywords(title=filePath.replace('/', ',') + ',' + self.title))
 
         if len(self.tags) <= 2:  # str形式list,至少含有[]2个字符
-            self.tags = '['+self.keywords+']'
+            self.tags = '[' + self.keywords + ']'
 
         if len(self.abbrlink.strip()) == 0:
             self.abbrlink = str(getFileAbbr(self.title))
@@ -169,7 +169,7 @@ class MdArticle(object):
 
 
 # 处理单文件
-def handleFile(fullFilePath):
+def handleFile(fullFilePath: str):
     if not fullFilePath.endswith('.md'):
         return
     print(fullFilePath)
@@ -180,7 +180,7 @@ def handleFile(fullFilePath):
 
 
 # 处理目录
-def handleDir(fileDir):
+def handleDir(fileDir: str):
     # for root, dirs, files in os.walk(fileDir):
     #     for file in files:
     #         print(os.path.join(root, file))
@@ -195,12 +195,18 @@ def handleDir(fileDir):
 # fullFilePath = 'abc.md'
 # handleFile(fullFilePath)
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--file_or_dir_list', type=str, nargs='+', help='file or dir list')
 
-print('params:' + str(sys.argv[1:]))
-for param in sys.argv[1:]:
-    if os.path.isdir(param):
-        handleDir(param)
-    elif os.path.isfile(param):
-        handleFile(param)
-abbrConflictMap = {k: v for k, v in abbrMap.items() if len(v) > 1}
-print('abbrConflictMap: %s' % str(abbrConflictMap))
+    args = parser.parse_args()
+    file_or_dir_list = args.file_or_dir_list
+
+    print('params:' + file_or_dir_list)
+    for param in file_or_dir_list:
+        if os.path.isdir(param):
+            handleDir(param)
+        elif os.path.isfile(param):
+            handleFile(param)
+    abbrConflictMap = {k: v for k, v in abbrMap.items() if len(v) > 1}
+    print('abbrConflictMap: %s' % str(abbrConflictMap))
