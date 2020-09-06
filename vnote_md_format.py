@@ -36,33 +36,33 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf8')
 
 # 访问凭证去腾讯找，参考：https://console.cloud.tencent.com/nlp/basicguide
 cred = credential.Credential("xxx", "yyy")
-httpProfile = HttpProfile()
-httpProfile.endpoint = "nlp.tencentcloudapi.com"
+http_profile = HttpProfile()
+http_profile.endpoint = "nlp.tencentcloudapi.com"
 
-clientProfile = ClientProfile()
-clientProfile.httpProfile = httpProfile
-client = nlp_client.NlpClient(cred, "ap-guangzhou", clientProfile)
+client_profile = ClientProfile()
+client_profile.httpProfile = http_profile
+client = nlp_client.NlpClient(cred, "ap-guangzhou", client_profile)
 req = models.KeywordsExtractionRequest()
 
 # 记录addr对应文章，用于输出冲突文章，手工处理
-abbrMap = dict()
+abbr_map = dict()
 
 
 # 时间戳转换
-def TimeStampToTime(timestamp):
-    timeStruct = time.localtime(timestamp)
-    return time.strftime('%Y-%m-%d %H:%M:%S', timeStruct)
+def timestamp_to_time(timestamp):
+    time_struct = time.localtime(timestamp)
+    return time.strftime('%Y-%m-%d %H:%M:%S', time_struct)
 
 
-def getFileDatetime(fullFilePath: str):
-    return TimeStampToTime(os.path.getctime(fullFilePath))
+def get_file_datetime(fullFilePath: str):
+    return timestamp_to_time(os.path.getctime(fullFilePath))
 
 
-def getFileCategories(fullFilePath: str):
+def get_file_categories(fullFilePath: str):
     return filter(lambda x: x != '.' and x != '/' and x != '', fullFilePath.split('/')[:-1])
 
 
-def getFileKeywords(title: str):
+def get_file_keywords(title: str):
     title = re.sub(r'\[.*?\]', r'', title).replace('_', ',')  # 去除[]中的东西
     title = re.sub(r'\d+', r'', title)
     params = '{"Num":10,"Text":"%s"}' % title
@@ -71,14 +71,14 @@ def getFileKeywords(title: str):
     return [item.Word for item in resp.Keywords]
 
 
-def getFileAbbr(title: str):
+def get_file_abbr(title: str):
     return hashlib.md5(title.encode('utf-8')).hexdigest()[-8:]
 
 
 class MdArticle(object):
     # 从文件中初始化
-    def __init__(self, fullFilePath=''):
-        self.fullFilePath = fullFilePath
+    def __init__(self, full_file_path=''):
+        self.full_file_path = full_file_path
         self.title = ''
         self.date = ''
         self.categories = ''
@@ -86,10 +86,10 @@ class MdArticle(object):
         self.keywords = ''
         self.abbrlink = ''
         self.data = []
-        if self.fullFilePath.strip():
+        if self.full_file_path.strip():
             # 操作文件
-            with open(self.fullFilePath, 'r+') as f:
-                endLineNum = 0
+            with open(self.full_file_path, 'r+') as f:
+                end_line_num = 0
                 lines = f.readlines()
                 if len(lines) > 0 and lines[0] == '---\n':
                     for i in range(1, len(lines)):
@@ -107,93 +107,86 @@ class MdArticle(object):
                             elif lines[i].startswith('abbrlink: '):
                                 self.abbrlink = lines[i][10:].strip()
                         else:
-                            endLineNum = i
+                            end_line_num = i
                             break
                 # 拼接新文件
-                if endLineNum == 0:
+                if end_line_num == 0:
                     self.data.extend(lines[0:])
                 else:
-                    self.data.extend(lines[endLineNum + 1:])
+                    self.data.extend(lines[end_line_num + 1:])
                 f.close()
         return
 
     # 填充修改自身信息
-    def fillInfo(self):
-        (filePath, fullFileName) = os.path.split(self.fullFilePath)
-        (fileName, fileExtension) = os.path.splitext(fullFileName)
+    def fill_info(self):
+        (file_path, full_filename) = os.path.split(self.full_file_path)
+        (filename, file_extension) = os.path.splitext(full_filename)
 
-        self.title = fileName.replace('[博]', '')
+        self.title = filename.replace('[博]', '')
         if not self.date:
-            self.date = getFileDatetime(self.fullFilePath)
-        self.categories = str(list(getFileCategories(self.fullFilePath)))
+            self.date = get_file_datetime(self.full_file_path)
+        self.categories = str(list(get_file_categories(self.full_file_path)))
         if len(self.keywords) <= 0:
-            self.keywords = ','.join(getFileKeywords(title=filePath.replace('/', ',') + ',' + self.title))
+            self.keywords = ','.join(get_file_keywords(title=file_path.replace('/', ',') + ',' + self.title))
 
         if len(self.tags) <= 2:  # str形式list,至少含有[]2个字符
             self.tags = '[' + self.keywords + ']'
 
         if len(self.abbrlink.strip()) == 0:
-            self.abbrlink = str(getFileAbbr(self.title))
-        abbrMap[self.abbrlink] = abbrMap.get(self.abbrlink, list()) + [fileName]
+            self.abbrlink = str(get_file_abbr(self.title))
+        abbr_map[self.abbrlink] = abbr_map.get(self.abbrlink, list()) + [filename]
         return
 
     # 保存到文件中
     def save(self):
         # 获得文章date和tags(优先使用原有数据)
-        filePrefixLines = ['---\n']
+        file_prefix_lines = ['---\n']
         # 文件名，填充title
-        filePrefixLines.append('title: %s  \n' % self.title)
+        file_prefix_lines.append('title: %s  \n' % self.title)
         # 文件创建时间，填充date
-        filePrefixLines.append('date: %s  \n' % self.date)
+        file_prefix_lines.append('date: %s  \n' % self.date)
         # 文件相对路径，填充categories
-        filePrefixLines.append('categories: %s  \n' % str(self.categories))
-        filePrefixLines.append('keywords: %s  \n' % str(self.keywords))
-        filePrefixLines.append('tags: %s  \n' % str(self.tags))
+        file_prefix_lines.append('categories: %s  \n' % str(self.categories))
+        file_prefix_lines.append('keywords: %s  \n' % str(self.keywords))
+        file_prefix_lines.append('tags: %s  \n' % str(self.tags))
         # 收尾
-        filePrefixLines.append('toc: true  \n')
-        filePrefixLines.append('abbrlink: %s  \n' % self.abbrlink)
+        file_prefix_lines.append('toc: true  \n')
+        file_prefix_lines.append('abbrlink: %s  \n' % self.abbrlink)
         if self.title.find('[密]') > -1:
-            filePrefixLines.append('password: xxxxyyyy  \n')
-        filePrefixLines.append('\n---\n')
+            file_prefix_lines.append('password: xxxxyyyy  \n')
+        file_prefix_lines.append('\n---\n')
         # 标题也重新生成,标题不重新生成
         # filePrefixLines.append('# %s\n' % self.title)
-        filePrefixLines.extend(self.data)
+        file_prefix_lines.extend(self.data)
 
         # 操作文件
-        with open(self.fullFilePath, 'r+') as f:
+        with open(self.full_file_path, 'r+') as f:
             f.truncate()
-            f.writelines(filePrefixLines)
+            f.writelines(file_prefix_lines)
             f.flush()
             f.close()
         return
 
 
 # 处理单文件
-def handleFile(fullFilePath: str):
-    if not fullFilePath.endswith('.md'):
+def handle_file(full_file_path: str):
+    if not full_file_path.endswith('.md'):
         return
-    print(fullFilePath)
+    print(full_file_path)
 
-    mdArticle = MdArticle(fullFilePath)
-    mdArticle.fillInfo()
-    mdArticle.save()
+    md_article = MdArticle(full_file_path)
+    md_article.fill_info()
+    md_article.save()
 
 
 # 处理目录
-def handleDir(fileDir: str):
+def handle_dir(file_dir: str):
     # for root, dirs, files in os.walk(fileDir):
     #     for file in files:
     #         print(os.path.join(root, file))
-    allFullFilePath = [os.path.join(root, file) for root, dirs, files in os.walk(fileDir) for file in files]
-    [handleFile(fullFilePath) for fullFilePath in allFullFilePath]
+    all_full_file_path = [os.path.join(root, file) for root, dirs, files in os.walk(file_dir) for file in files]
+    [handle_file(full_file_path) for full_file_path in all_full_file_path]
 
-
-# fullFilePath = '/home/john/文档/vnote_notebooks/vnote/生活/读书笔记/读书笔记_魔鬼搭讪学[整].md'
-# handleFile(fullFilePath)
-# fileDir = './test1/test2/'
-# handleDir(fileDir)
-# fullFilePath = 'abc.md'
-# handleFile(fullFilePath)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -205,8 +198,8 @@ if __name__ == '__main__':
     print('params: %s' % file_or_dir_list)
     for param in file_or_dir_list:
         if os.path.isdir(param):
-            handleDir(param)
+            handle_dir(param)
         elif os.path.isfile(param):
-            handleFile(param)
-    abbrConflictMap = {k: v for k, v in abbrMap.items() if len(v) > 1}
-    print('abbrConflictMap: %s' % str(abbrConflictMap))
+            handle_file(param)
+    abbr_conflict_map = {k: v for k, v in abbr_map.items() if len(v) > 1}
+    print('abbr_conflict_map: %s' % str(abbr_conflict_map))

@@ -18,7 +18,7 @@ from typing import Optional
 import pandas as pd
 
 
-def getImgsAndTags(file_path: str):
+def get_imgs_and_tags(file_path: str):
     imgs = list()
     tags = list()
     with open(file_path, 'r') as f:
@@ -28,15 +28,15 @@ def getImgsAndTags(file_path: str):
         tags = tagsStr.replace('\'', '').replace('\"', '').replace(' ', '').split(',')
 
         content = ''.join(lines[9:])
-        findAllImgs = re.findall(r"([\d_]+\.(png|jpg|jpeg|gif))", content, re.I | re.S | re.M)
-        if findAllImgs:
-            imgs = [k for k, v in findAllImgs]
+        find_all_imgs = re.findall(r"([\d_]+\.(png|jpg|jpeg|gif))", content, re.I | re.S | re.M)
+        if find_all_imgs:
+            imgs = [k for k, v in find_all_imgs]
 
     return imgs, tags
 
 
 # 添加水印
-def waterMark(file_path: str, water_path: Optional[str] = None):
+def water_mark(file_path: str, water_path: Optional[str] = None):
     if not water_path:
         return
     ffmpeg_cmd = "ffmpeg -i %s -i %s -filter_complex 'overlay=main_w-overlay_w-10 : main_h-overlay_h-10' %s -y" % (
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     lost_imgs = list()
     new_imgs = list()
     hexo_exist_imgs = set(os.listdir(hexo_img_dir))
-    pathTagsMap = defaultdict(list)
+    path_tags_map = defaultdict(list)
 
     for dirpath, dirnames, filenames in os.walk(vnote_dir):
         if dirpath.find('_v_recycle_bin') > -1:
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         for name in filenames:
             if name.endswith('md') and re.search(filter_reg, name, re.M | re.I):
                 # 采集文中图片
-                img_names, tags = getImgsAndTags(dirpath + '/' + name)
+                img_names, tags = get_imgs_and_tags(dirpath + '/' + name)
                 # 文章copy到文章文件夹
                 shutil.copy(dirpath + '/' + name, hexo_md_dir)
                 # 图片copy到图片文件夹
@@ -87,7 +87,7 @@ if __name__ == '__main__':
                         # 图片复制
                         list(map(lambda img_name: shutil.copy(vnote_img_dir + '/' + img_name, hexo_img_dir), img_names))
                         # 图片加水印
-                        list(map(lambda img_name: waterMark(hexo_img_dir + '/' + img_name, water_path), img_names))
+                        list(map(lambda img_name: water_mark(hexo_img_dir + '/' + img_name, water_path), img_names))
                         new_imgs.extend(img_names)
                     except Exception as e:
                         lost_imgs.append(e.filename)
@@ -107,12 +107,12 @@ if __name__ == '__main__':
 
                 # 收集各路径下的tags
                 key = ','.join(dirpath.replace(vnote_dir, '').split('/')[:2])
-                pathTagsMap[key].extend(tags)
-    for key, value in pathTagsMap.items():
-        pathTagsMap[key] = Counter(value)
+                path_tags_map[key].extend(tags)
+    for key, value in path_tags_map.items():
+        path_tags_map[key] = Counter(value)
     print('标签信息')
     tagDf = pd.DataFrame(columns=['path1', 'path2', 'tags'])
-    for key, count_map in pathTagsMap.items():
+    for key, count_map in path_tags_map.items():
         keys = key.split(',')
         tagDf.loc[tagDf.shape[0]] = [keys[0], keys[1] if keys[1:] else '', ','.join(
             ['<a href="/tags/%s" >%s(%s)</a>' % (tag, tag, value) for tag, value in count_map.items()])]
