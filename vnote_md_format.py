@@ -202,7 +202,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     file_or_dir_list = args.file_or_dir_list
 
-    print('params:' + file_or_dir_list)
+    print('params: %s' % file_or_dir_list)
     for param in file_or_dir_list:
         if os.path.isdir(param):
             handleDir(param)
