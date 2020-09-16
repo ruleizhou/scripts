@@ -17,12 +17,10 @@
 #    waitSet=[页面拥有子链接（根域名形式）,页面拥有子链接（根域名形式）,,,]
 # => 循环此步骤
 import argparse
-import datetime
 import re
 import threading
 from multiprocessing import cpu_count, Pool, Queue
 from typing import List, Tuple, Callable
-
 import requests
 from contextlib2 import suppress
 
