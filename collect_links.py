@@ -26,16 +26,16 @@ from contextlib2 import suppress
 
 
 class UniqueQueue:
-    """工具类,唯一性队列(Queue),同一个元素只能入队一次"""
+    """工具类,唯一性队列(Queue),同一个元素只能入队一次
+
+    :cvar int maxsize:队列最大元素个数（队列为阻塞队列）
+    :cvar func key:可调用函数，作用在item上用于产生唯一的key来做重复性判别，重复元素仅能入队一次（首次）
+    """
     def __init__(self, maxsize: int = 0, key: Callable = None) -> None:
         """初始化类实例
 
-        Args:
-            maxsize (int): 队列最大元素个数（队列为阻塞队列）
-            key (callable): 可调用函数，作用在item上用于产生唯一的key来做重复性判别，重复元素仅能入队一次（首次）
-
-        Returns:
-            None (None): 无返回值
+        :param int maxsize: 队列最大元素个数（队列为阻塞队列）
+        :param func key: 可调用函数，作用在item上用于产生唯一的key来做重复性判别，重复元素仅能入队一次（首次）
         """
         self.key = key
         self.queue = Queue(maxsize=maxsize)
@@ -44,11 +44,8 @@ class UniqueQueue:
     def put(self, item: Tuple[int,str]) -> bool:
         """向队列中添加新元素
 
-        Args:
-            item (Tuple[int,str]): item[0] url的深度,url链接地址
-
-        Returns:
-            bool (bool): 是否采集成功
+        :param: tuple item: item[0] url的深度,url链接地址
+        :return bool : 是否采集成功
         """
         unique_key = self.key(item) if self.key else item
         return unique_key not in self.unique_set and self.queue.put(item) or self.unique_set.add(unique_key)
@@ -63,6 +60,15 @@ class UniqueQueue:
 
 
 class CollectLinks:
+    """
+    递归采集链接
+
+    :cvar str seed_url: 种子链接
+    :cvar str suffix: 后缀
+    :cvar int max_count: 最大采集链接个数
+    :cvar int max_depth: 最大采集链接深度
+    """
+
     headers = {
         'Connection': 'keep-alive',
         'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -79,14 +85,10 @@ class CollectLinks:
     def __init__(self, seed_url: object, suffix: object, max_count: object = 100, max_depth: object = 10) -> None:
         """初始化类实例
 
-        Args:
-            seed_url (str): 种子链接
-            suffix (str): 后缀
-            max_count (int): 最大采集链接个数
-            max_depth (int): 最大采集链接深度
-
-        Returns:
-            None (None): 无返回值
+        :param str seed_url: 种子链接
+        :param str suffix: 后缀
+        :param int max_count: 最大采集链接个数
+        :param int max_depth : 最大采集链接深度
         """
         self.seed_url = seed_url
         self.max_depth = max_depth
