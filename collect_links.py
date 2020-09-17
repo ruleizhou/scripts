@@ -26,19 +26,32 @@ from contextlib2 import suppress
 
 
 class UniqueQueue:
-    def __init__(self, maxsize: int = 0, key: Callable = None):
+    def __init__(self, maxsize: int = 0, key: Callable = None) -> None:
+        """
+        tool,unique queue,only put same item once
+
+        :rtype: None
+        :param maxsize: queue max size ,when empty get() or full put() will stuck as common Queue
+        :param key: generate unique key func,two item have same unique key will put queue only once(first time)
+        """
         self.key = key
         self.queue = Queue(maxsize=maxsize)
         self.unique_set = set()
 
-    def put(self, item: object):
+    def put(self, item: Tuple[int,str]) -> bool:
+        """
+        add new item to unique queue
+
+        :rtype: success or fail
+        :param item :item[0] depth of url,item[1] url
+        """
         unique_key = self.key(item) if self.key else item
         return unique_key not in self.unique_set and self.queue.put(item) or self.unique_set.add(unique_key)
 
-    def get(self):
+    def get(self) -> Tuple[int, str]:
         return self.queue.get()
 
-    def empty(self):
+    def empty(self) -> bool:
         return self.queue.empty()
 
 
@@ -73,13 +86,14 @@ class CollectLinks:
         self.queue = UniqueQueue(key=lambda x: x[1])
         self.success_set = set()
 
-    def process_queue(self) -> List[str]:
+    def process_queue(self) -> None:
         """
-        解析url对应网页中的url地址
+        广度遍历形式解析url对应网页中的url地址,并回送到任务队列
 
-        :rtype: None
-        :param str url: 网页url地址
-        :return List[str] : (入参的网页地址，对应url地址内的http链接地址)
+        1,从任务队列unique queue中获取到url
+        2,下载解析url,获取网页中的url地址
+        3,将url地址加入到unique queue中
+
         """
         depth = 0
         while len(self.success_set) < self.max_count and depth < self.max_depth :
@@ -96,7 +110,11 @@ class CollectLinks:
             urls and self.success_set.add(url)
             [self.queue.put((depth + 1, url + self.suffix)) for url in urls]
 
-    def collect(self):
+    def collect(self)-> None:
+        """
+        启动多线程进行网页广度采集任务
+
+        """
         self.queue.put((1, self.seed_url + self.suffix))
         thread_count = cpu_count()*2 - 1
         thread_list = [threading.Thread(target=self.process_queue, ) for _ in range(thread_count)]
