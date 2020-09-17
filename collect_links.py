@@ -26,32 +26,39 @@ from contextlib2 import suppress
 
 
 class UniqueQueue:
+    """工具类,唯一性队列(Queue),同一个元素只能入队一次"""
     def __init__(self, maxsize: int = 0, key: Callable = None) -> None:
-        """
-        tool,unique queue,only put same item once
+        """初始化类实例
 
-        :rtype: None
-        :param maxsize: queue max size ,when empty get() or full put() will stuck as common Queue
-        :param key: generate unique key func,two item have same unique key will put queue only once(first time)
+        Args:
+            maxsize (int): 队列最大元素个数（队列为阻塞队列）
+            key (callable): 可调用函数，作用在item上用于产生唯一的key来做重复性判别，重复元素仅能入队一次（首次）
+
+        Returns:
+            None (None): 无返回值
         """
         self.key = key
         self.queue = Queue(maxsize=maxsize)
         self.unique_set = set()
 
     def put(self, item: Tuple[int,str]) -> bool:
-        """
-        add new item to unique queue
+        """向队列中添加新元素
 
-        :rtype: success or fail
-        :param item :item[0] depth of url,item[1] url
+        Args:
+            item (Tuple[int,str]): item[0] url的深度,url链接地址
+
+        Returns:
+            bool (bool): 是否采集成功
         """
         unique_key = self.key(item) if self.key else item
         return unique_key not in self.unique_set and self.queue.put(item) or self.unique_set.add(unique_key)
 
     def get(self) -> Tuple[int, str]:
+        """获取队列元素."""
         return self.queue.get()
 
     def empty(self) -> bool:
+        """判断队列是否为空."""
         return self.queue.empty()
 
 
@@ -70,14 +77,16 @@ class CollectLinks:
     }
 
     def __init__(self, seed_url: object, suffix: object, max_count: object = 100, max_depth: object = 10) -> None:
-        """
-        初始化实例
+        """初始化类实例
 
-        :rtype: None
-        :param seed_url: 种子链接
-        :param suffix: 后缀
-        :param max_count: 最大采集链接个数
-        :param max_depth: 最大采集链接深度
+        Args:
+            seed_url (str): 种子链接
+            suffix (str): 后缀
+            max_count (int): 最大采集链接个数
+            max_depth (int): 最大采集链接深度
+
+        Returns:
+            None (None): 无返回值
         """
         self.seed_url = seed_url
         self.max_depth = max_depth
@@ -87,13 +96,12 @@ class CollectLinks:
         self.success_set = set()
 
     def process_queue(self) -> None:
-        """
-        广度遍历形式解析url对应网页中的url地址,并回送到任务队列
+        """执行任务队列中任务
 
+        广度遍历形式解析url对应网页中的url地址,并回送到任务队列
         1,从任务队列unique queue中获取到url
         2,下载解析url,获取网页中的url地址
         3,将url地址加入到unique queue中
-
         """
         depth = 0
         while len(self.success_set) < self.max_count and depth < self.max_depth :
@@ -111,12 +119,9 @@ class CollectLinks:
             [self.queue.put((depth + 1, url + self.suffix)) for url in urls]
 
     def collect(self)-> None:
-        """
-        启动多线程进行网页广度采集任务
-
-        """
+        """启动多线程进行网页广度采集任务"""
         self.queue.put((1, self.seed_url + self.suffix))
-        thread_count = cpu_count()*2 - 1
+        thread_count = cpu_count() * 2 - 1
         thread_list = [threading.Thread(target=self.process_queue, ) for _ in range(thread_count)]
         [thread.start() for thread in thread_list]
         [thread.join() for thread in thread_list]
