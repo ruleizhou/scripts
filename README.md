@@ -2,15 +2,6 @@
 依赖conda环境（默认）：py35   
 
 
-## 03,cta_machineInfo.py  
-功能：显示ubuntu下cta软件获取到的机器信息（无法通过验证时，自查问题使用）  
-python cta_machineInfo/cta_machineInfo.py   
-```
-b'2@2020-04-11 18:04:54@172.17.0.1@172.16.0.239@0242b4365d41@aced5cf6d10a@john-P95-@4.15.@@@'
-c_int(90)
-```
-
-
 ## 06,hexoAddr2Vnote.py
 功能说明  
 将hexo文件夹_post里面的.md文件里面的abbrlink提取出来，写入到自己的md编辑工具的文件夹下（本人使用vnote编辑md，故vnote举例），避免后续修改文章title导致生成网页链接变化的问题  
